@@ -1,0 +1,61 @@
+/* === ALL IMPORTS FIRST === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Marcellus&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* === THEN EVERYTHING ELSE === */
+@theme {
+  --color-gallery-cream: #FAF8F5;
+  --color-gallery-charcoal: #2D2D2D;
+  --color-gallery-gold: #C9A962;
+  --color-gallery-sage: #9CAF88;
+  --color-gallery-light-pink: #f47481;
+  --color-gallery-pink: #ee3047;
+  --color-gallery-dark-pink: #d70734;
+  --color-gallery-wine: #b80028;
+  --color-gallery-bone: ##fffde4;
+  
+  --font-display: 'Fraunces', regular;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-gallery-cream);
+  color: var(--color-gallery-cream);
+  font-family: var(--font-display);
+}
+
+/* Custom components */
+.btn-primary {
+  background-color: var(--color-gallery-wine);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-whatsapp {
+  background-color: #22c55e;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.btn-whatsapp:hover {
+  background-color: #16a34a;
+}

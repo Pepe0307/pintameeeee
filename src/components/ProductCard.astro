@@ -1,0 +1,60 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  artist: string;
+  price: number;
+  currency: string;
+  image: string;
+  category: string;
+  available: boolean;
+}
+
+const { slug, title, artist, price, currency, image, category, available } = Astro.props;
+
+const formatPrice = (price: number, currency: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+  }).format(price);
+};
+---
+
+<article class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+  <a href={`/product/${slug}`} class="block">
+    <!-- Image Container -->
+    <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
+      <img 
+        src={image} 
+        alt={title}
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
+      />
+      
+      <!-- Category Badge -->
+      <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium capitalize">
+        {category}
+      </span>
+      
+      <!-- Availability Badge -->
+      {!available && (
+        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
+            Sold
+          </span>
+        </div>
+      )}
+    </div>
+    
+    <!-- Content -->
+    <div class="p-5">
+      <h3 class="font-display text-xl font-semibold text-gallery-charcoal group-hover:text-gallery-gold transition-colors">
+        {title}
+      </h3>
+      <p class="text-gray-500 mt-1">{artist}</p>
+      <p class="text-gallery-gold font-semibold text-lg mt-3">
+        {formatPrice(price, currency)}
+      </p>
+    </div>
+  </a>
+</article>

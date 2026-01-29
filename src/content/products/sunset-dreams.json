@@ -1,0 +1,13 @@
+{
+  "title": "Sunset Dreams",
+  "artist": "Maria González",
+  "price": 450,
+  "currency": "USD",
+  "description": "An evocative oil painting capturing the golden hour over a serene coastline.",
+  "category": "painting",
+  "image": "/images/products/sunset-dreams.jpg",
+  "dimensions": "60cm x 80cm",
+  "available": true,
+  "featured": true,
+  "tags": ["landscape", "oil", "contemporary"]
+}

@@ -1,0 +1,77 @@
+---
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/catalogue', label: 'Catalogue' },
+  { href: '/#about', label: 'About' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+
+<header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <!-- LOGO - Updated! -->
+      <a href="/" class="flex items-center gap-3">
+        <img 
+          src="/images/p.png" 
+          alt="Art Gallery Logo"
+          class="h-10 w-auto"
+        />
+        <!-- Optional: Keep text next to logo -->
+        <span class="font-display text-3xl sm:text-3xl font-normal text-gallery-dark-pink">
+            Píntame
+        </span>
+      </a>
+      
+      <!-- Desktop Navigation -->
+      <ul class="hidden md:flex items-center gap-8">
+        {navLinks.map(link => (
+          <li>
+            <a 
+              href={link.href} 
+              class="text-gallery-charcoal hover:text-gallery-gold transition-colors font-medium"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      
+      <!-- Mobile Menu Button -->
+      <button 
+        id="menu-toggle"
+        class="md:hidden p-2 text-gallery-charcoal"
+        aria-label="Toggle menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Mobile Navigation -->
+    <ul id="mobile-menu" class="hidden md:hidden flex-col gap-4 pt-4">
+      {navLinks.map(link => (
+        <li>
+          <a 
+            href={link.href} 
+            class="block py-2 text-gallery-charcoal hover:text-gallery-gold transition-colors"
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const menuToggle = document.getElementById('menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  menuToggle?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+    mobileMenu?.classList.toggle('flex');
+  });
+</script>

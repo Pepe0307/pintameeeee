@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const products = await getCollection('products');
+  return products.map(product => ({
+    params: { slug: product.id.replace('.json', '') },
+    props: { product },
+  }));
+}
+
+const { product } = Astro.props;
+const { title, artist, price, currency, description, image, category, dimensions, available, tags } = product.data;
+
+const formatPrice = (price: number, currency: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+  }).format(price);
+};
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="py-16 px-4">
+    <div class="container mx-auto max-w-6xl">
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <ol class="flex items-center gap-2 text-sm text-gray-500">
+          <li><a href="/" class="hover:text-gallery-gold">Home</a></li>
+          <li>/</li>
+          <li><a href="/catalogue" class="hover:text-gallery-gold">Catalogue</a></li>
+          <li>/</li>
+          <li class="text-gallery-charcoal">{title}</li>
+        </ol>
+      </nav>
+      
+      <div class="grid lg:grid-cols-2 gap-12">
+        <!-- Image -->
+        <div class="relative">
+          <div class="aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
+            <img 
+              src={image} 
+              alt={title}
+              class="w-full h-full object-cover"
+            />
+          </div>
+          {!available && (
+            <div class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
+              Sold
+            </div>
+          )}
+        </div>
+        
+        <!-- Details -->
+        <div class="flex flex-col">
+          <span class="text-gallery-gold font-medium uppercase tracking-wider text-sm mb-2">
+            {category}
+          </span>
+          
+          <h1 class="font-display text-4xl md:text-5xl font-bold text-gallery-charcoal mb-2">
+            {title}
+          </h1>
+          
+          <p class="text-xl text-gray-600 mb-6">
+            by {artist}
+          </p>
+          
+          <p class="text-3xl font-bold text-gallery-gold mb-6">
+            {formatPrice(price, currency)}
+          </p>
+          
+          <p class="text-gray-600 leading-relaxed mb-6">
+            {description}
+          </p>
+          
+          {dimensions && (
+            <div class="flex items-center gap-2 mb-6 text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+              <span>Dimensions: {dimensions}</span>
+            </div>
+          )}
+          
+          {tags && tags.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-8">
+              {tags.map(tag => (
+                <span class="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          <!-- WhatsApp CTA -->
+          {available ? (
+            <div class="mt-auto">
+              <WhatsAppButton 
+                productTitle={title}
+                productPrice={price}
+                currency={currency}
+                size="lg"
+              />
+              <p class="text-sm text-gray-500 mt-3">
+                💬 Contact us directly via WhatsApp to purchase or ask questions
+              </p>
+            </div>
+          ) : (
+            <div class="mt-auto bg-gray-100 rounded-lg p-6 text-center">
+              <p class="text-gray-600 font-medium">
+                This artwork has been sold. Contact us for similar pieces!
+              </p>
+              <a 
+                href="https://wa.me/1234567890?text=I'm interested in artworks similar to: ${title}"
+                target="_blank"
+                class="text-gallery-gold hover:underline mt-2 inline-block"
+              >
+                Request Similar Artwork
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
