@@ -7,7 +7,10 @@ const allProducts = await getCollection('products');
 const categories = [...new Set(allProducts.map(p => p.data.category))];
 ---
 
-<BaseLayout title="Catálogo" description="Explora nuestra colección de arte completa">
+<BaseLayout 
+  title="Catálogo" 
+  description="Explora nuestro catálogo completo de arte. Encuentra pinturas, esculturas y más de talentosos artistas."
+>
   <section class="py-16 px-4">
     <div class="container mx-auto">
       <!-- Header -->

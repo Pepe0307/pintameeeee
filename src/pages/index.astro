@@ -7,7 +7,10 @@ const allProducts = await getCollection('products');
 const featuredProducts = allProducts.filter(product => product.data.featured);
 ---
 
-<BaseLayout title="Inicio">
+<BaseLayout 
+  title="Inicio"
+  description="Pintame - Descubre y compra obras de arte únicas de artistas talentosos. Explora nuestra colección de pinturas, esculturas y más."
+>
   <!-- Hero Section -->
   <section class="relative h-[55vh] flex items-center justify-center bg-gallery-dark-pink">
     <div class="absolute inset-0 opacity-20">
