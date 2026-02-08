@@ -7,16 +7,16 @@ const allProducts = await getCollection('products');
 const categories = [...new Set(allProducts.map(p => p.data.category))];
 ---
 
-<BaseLayout title="Catalogue" description="Browse our complete art collection">
+<BaseLayout title="Catálogo" description="Explora nuestra colección de arte completa">
   <section class="py-16 px-4">
     <div class="container mx-auto">
       <!-- Header -->
       <div class="text-center mb-12">
         <h1 class="font-display text-5xl font-bold text-gallery-charcoal mb-4">
-          Art Catalogue
+          Catálogo de Arte
         </h1>
         <p class="text-gray-600 max-w-2xl mx-auto">
-          Browse our complete collection of unique artworks
+          Explora nuestra colección completa de obras de arte únicas
         </p>
       </div>
       
@@ -27,7 +27,7 @@ const categories = [...new Set(allProducts.map(p => p.data.category))];
                  bg-gallery-charcoal text-white transition-all"
           data-category="all"
         >
-          All
+          Todos
         </button>
         {categories.map(category => (
           <button 

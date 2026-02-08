@@ -8,17 +8,17 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Discover unique art pieces from talented artists' } = Astro.props;
+const { title, description = 'Descubre piezas de arte únicas de artistas talentosos' } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={description} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <title>{title} | Art Gallery Shop</title>
+  <title>{title} | Tienda de Galería de Arte</title>
 </head>
 <body class="min-h-screen flex flex-col">
   <Header />

@@ -1,13 +1,13 @@
 {
-  "title": "Abstract Flow",
+  "title": "Flujo Abstracto",
   "artist": "Carlos Ruiz",
   "price": 320,
   "currency": "USD",
-  "description": "Dynamic acrylic piece exploring movement and color theory.",
+  "description": "Pieza acrílica dinámica que explora el movimiento y la teoría del color.",
   "category": "painting",
-  "image": "/images/products/abstract-flow.jpg",
+  "image": "/images/products/abstract-flow.webp",
   "dimensions": "50cm x 70cm",
   "available": true,
   "featured": true,
-  "tags": ["abstract", "acrylic", "modern"]
+  "tags": ["abstracto", "acrilico", "moderno"]
 }

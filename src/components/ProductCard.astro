@@ -12,8 +12,18 @@ interface Props {
 
 const { slug, title, artist, price, currency, image, category, available } = Astro.props;
 
+const categoryTranslations: Record<string, string> = {
+  painting: 'Pintura',
+  sculpture: 'Escultura',
+  photography: 'Fotografía',
+  digital: 'Digital',
+  print: 'Impresión',
+};
+
+const displayedCategory = categoryTranslations[category] || category; // Fallback to English if not found
+
 const formatPrice = (price: number, currency: string) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: currency,
   }).format(price);
@@ -32,15 +42,15 @@ const formatPrice = (price: number, currency: string) => {
       />
       
       <!-- Category Badge -->
-      <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium capitalize">
-        {category}
+      <span class="absolute top-4 left-4 bg-gallery-pink text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
+        {displayedCategory}
       </span>
       
       <!-- Availability Badge -->
       {!available && (
         <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
           <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
-            Sold
+            Vendido
           </span>
         </div>
       )}

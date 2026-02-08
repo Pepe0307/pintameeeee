@@ -1,13 +1,13 @@
 {
-  "title": "Urban Melody",
+  "title": "Melodía Urbana",
   "artist": "James Chen",
   "price": 280,
   "currency": "USD",
-  "description": "A vibrant cityscape capturing the rhythm of urban nightlife.",
+  "description": "Un vibrante paisaje urbano que captura el ritmo de la vida nocturna de la ciudad.",
   "category": "painting",
-  "image": "/images/products/urban-melody.jpg",
+  "image": "/images/products/urban-melody.webp",
   "dimensions": "40cm x 60cm",
   "available": true,
   "featured": false,
-  "tags": ["cityscape", "mixed-media", "contemporary"]
+  "tags": ["paisaje-urbano", "tecnica-mixta", "contemporaneo"]
 }
