@@ -5,6 +5,16 @@ import { getCollection } from 'astro:content';
 
 const allProducts = await getCollection('products');
 const categories = [...new Set(allProducts.map(p => p.data.category))];
+
+const categoryTranslations: Record<string, string> = {
+  'painting': 'Pintura',
+  'sculpture': 'Escultura',
+  'photography': 'Fotografía',
+  'drawing': 'Dibujo',
+  'digital-art': 'Arte Digital',
+  'mixed-media': 'Técnica Mixta',
+  'print': 'Grabado'
+};
 ---
 
 <BaseLayout 
@@ -38,7 +48,7 @@ const categories = [...new Set(allProducts.map(p => p.data.category))];
                    text-gallery-charcoal hover:bg-gallery-charcoal hover:text-white transition-all capitalize"
             data-category={category}
           >
-            {category}
+            {categoryTranslations[category] || category}
           </button>
         ))}
       </div>
