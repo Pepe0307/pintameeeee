@@ -2,8 +2,37 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
 import { getCollection } from 'astro:content';
+import sharp from 'sharp';
+import path from 'path';
+
+// Helper function to get image dimensions
+async function getImageDimensions(imagePath: string) {
+  // Assuming images are in public/images/products/
+  const fullPath = path.join(process.cwd(), 'public', imagePath);
+  try {
+    const metadata = await sharp(fullPath).metadata();
+    return { width: metadata.width, height: metadata.height };
+  } catch (error) {
+    console.error(`Error getting dimensions for ${fullPath}:`, error);
+    return { width: undefined, height: undefined }; // Fallback
+  }
+}
 
 const allProducts = await getCollection('products');
+
+// Fetch dimensions for all product images at build time
+const productsWithDimensions = await Promise.all(allProducts.map(async (product) => {
+  const dimensions = await getImageDimensions(product.data.image);
+  return {
+    ...product,
+    data: {
+      ...product.data,
+      width: dimensions.width,
+      height: dimensions.height,
+    },
+  };
+}));
+
 const categories = [...new Set(allProducts.map(p => p.data.category))];
 
 const categoryTranslations: Record<string, string> = {
@@ -55,7 +84,7 @@ const categoryTranslations: Record<string, string> = {
       
       <!-- Products Grid -->
       <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="products-grid">
-        {allProducts.map(product => (
+        {productsWithDimensions.map(product => (
           <div class="product-item" data-category={product.data.category}>
             <ProductCard 
               slug={product.id.replace('.json', '')}
@@ -66,6 +95,8 @@ const categoryTranslations: Record<string, string> = {
               image={product.data.image}
               category={product.data.category}
               available={product.data.available}
+              width={product.data.width}
+              height={product.data.height}
             />
           </div>
         ))}
