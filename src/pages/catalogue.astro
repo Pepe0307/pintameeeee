@@ -92,10 +92,12 @@ const categoryTranslations: Record<string, string> = {
       const category = btn.getAttribute('data-category');
       
       productItems.forEach(item => {
-        if (category === 'all' || item.getAttribute('data-category') === category) {
-          item.style.display = 'block';
+        // Assert item to HTMLElement to access its style property
+        const htmlItem = item as HTMLElement; 
+        if (category === 'all' || htmlItem.getAttribute('data-category') === category) {
+          htmlItem.style.display = 'block';
         } else {
-          item.style.display = 'none';
+          htmlItem.style.display = 'none';
         }
       });
     });

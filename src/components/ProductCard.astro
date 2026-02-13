@@ -8,9 +8,12 @@ interface Props {
   image: string;
   category: string;
   available: boolean;
+  // Add optional width and height for the image to prevent layout shifts
+  width?: number;
+  height?: number;
 }
 
-const { slug, title, artist, price, currency, image, category, available } = Astro.props;
+const { slug, title, artist, price, currency, image, category, available, width = 800, height = 1000 } = Astro.props;
 
 const categoryTranslations: Record<string, string> = {
   painting: 'Pintura',
@@ -18,6 +21,7 @@ const categoryTranslations: Record<string, string> = {
   photography: 'Fotografía',
   digital: 'Digital',
   print: 'Impresión',
+  'mixed-media': 'Técnica Mixta', // Added from previous task
 };
 
 const displayedCategory = categoryTranslations[category] || category; // Fallback to English if not found
@@ -37,6 +41,8 @@ const formatPrice = (price: number, currency: string) => {
       <img 
         src={image} 
         alt={title}
+        width={width}
+        height={height}
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
