@@ -7,6 +7,6 @@
   "category": "sculpture",
   "image": "/images/products/urban-melody.webp",
   "available": true,
-  "featured": false,
+  "featured": true,
   "tags": ["paisaje-urbano", "tecnica-mixta", "contemporaneo"]
 }
