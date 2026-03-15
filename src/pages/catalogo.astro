@@ -4,6 +4,7 @@ import ProductCard from '../components/ProductCard.astro';
 import { getCollection } from 'astro:content';
 import sharp from 'sharp';
 import path from 'path';
+import { translateCategory } from '../utils/translations';
 
 // Helper function to get image dimensions
 async function getImageDimensions(imagePath: string) {
@@ -34,16 +35,6 @@ const productsWithDimensions = await Promise.all(allProducts.map(async (product)
 }));
 
 const categories = [...new Set(allProducts.map(p => p.data.category))];
-
-const categoryTranslations: Record<string, string> = {
-  'painting': 'Pintura',
-  'sculpture': 'Escultura',
-  'photography': 'Fotografía',
-  'drawing': 'Dibujo',
-  'digital-art': 'Arte Digital',
-  'mixed-media': 'Técnica Mixta',
-  'print': 'Grabado'
-};
 ---
 
 <BaseLayout 
@@ -77,7 +68,7 @@ const categoryTranslations: Record<string, string> = {
                    text-gallery-charcoal hover:bg-gallery-charcoal hover:text-white transition-all capitalize"
             data-category={category}
           >
-            {categoryTranslations[category] || category}
+            {translateCategory(category)}
           </button>
         ))}
       </div>
