@@ -1,8 +1,8 @@
 {
   "title": "Flujo Abstracto",
   "artist": "Lida",
-  "price": 320,
-  "currency": "USD",
+  "price": 60000,
+  "currency": "COP",
   "description": "Pieza acrílica dinámica que explora el movimiento y la teoría del color.",
   "category": "painting",
   "image": "/images/products/abstract-flow.webp",

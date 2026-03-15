@@ -7,20 +7,16 @@ interface Props {
   size?: 'sm' | 'md' | 'lg';
 }
 
+import { formatPrice } from '../utils/formatters';
+import { SITE_CONFIG } from '../utils/config';
+
 const { 
   productTitle, 
   productPrice, 
   currency,
-  phoneNumber = '+573127944523', // Reemplaza con tu número de WhatsApp
+  phoneNumber = SITE_CONFIG.whatsappNumber,
   size = 'md' 
 } = Astro.props;
-
-const formatPrice = (price: number, currency: string) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: currency,
-  }).format(price);
-};
 
 const message = encodeURIComponent(
   `¡Hola! Me interesa este producto:\n\n` +

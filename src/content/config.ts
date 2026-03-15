@@ -6,7 +6,7 @@ const productsCollection = defineCollection({
     title: z.string(),
     artist: z.string(),
     price: z.number(),
-    currency: z.string().default('USD'),
+    currency: z.string().default('COP'),
     description: z.string(),
     category: z.enum(['painting', 'sculpture', 'photography', 'digital', 'print']),
     image: z.string(),

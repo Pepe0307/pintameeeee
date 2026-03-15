@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
+import { SITE_CONFIG } from '../utils/config';
 
 interface Props {
   title: string;
@@ -15,8 +16,8 @@ const {
   image = '/images/logo.png' 
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL(image, Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost:4321');
+const socialImageURL = new URL(image, Astro.site || 'http://localhost:4321');
 ---
 
 <!DOCTYPE html>
@@ -26,7 +27,7 @@ const socialImageURL = new URL(image, Astro.site);
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <!-- Primary Meta Tags -->
-  <title>{title} | Tienda de Galería de Arte</title>
+  <title>{title} | {SITE_CONFIG.siteName}</title>
   <meta name="description" content={description} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="canonical" href={canonicalURL} />
@@ -34,14 +35,14 @@ const socialImageURL = new URL(image, Astro.site);
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content={canonicalURL} />
-  <meta property="og:title" content={`${title} | Tienda de Galería de Arte`} />
+  <meta property="og:title" content={`${title} | ${SITE_CONFIG.siteName}`} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content={socialImageURL} />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content={canonicalURL} />
-  <meta property="twitter:title" content={`${title} | Tienda de Galería de Arte`} />
+  <meta property="twitter:title" content={`${title} | ${SITE_CONFIG.siteName}`} />
   <meta property="twitter:description" content={description} />
   <meta property="twitter:image" content={socialImageURL} />
 </head>
