@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
 import { getCollection } from 'astro:content';
+import { SITE_CONFIG } from '../utils/config';
 
 const allProducts = await getCollection('products');
 const featuredProducts = allProducts.filter(product => product.data.featured);
@@ -9,7 +10,7 @@ const featuredProducts = allProducts.filter(product => product.data.featured);
 
 <BaseLayout 
   title="Inicio"
-  description="Pintame - Descubre y compra obras de arte únicas, hechas a mano y pintadas a mano por Lida. Explora su colección exclusiva desde Colombia."
+  description={`${SITE_CONFIG.siteName} - Descubre y compra obras de arte únicas, hechas a mano y pintadas a mano por Lida. Explora su colección exclusiva desde Colombia.`}
 >
   <!-- Hero Section -->
   <section class="relative h-[55vh] flex items-center justify-center bg-gallery-dark-pink">
@@ -88,7 +89,7 @@ const featuredProducts = allProducts.filter(product => product.data.featured);
         ¡Contáctanos directamente por WhatsApp!
       </p>
       <a 
-        href="https://wa.me/+573127944523?text=¡Hola! Tengo una pregunta sobre tu galería de arte."
+        href={`https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(SITE_CONFIG.whatsappDefaultMessage)}`}
         target="_blank"
         rel="noopener noreferrer"
         class="btn-whatsapp inline-flex text-lg"
