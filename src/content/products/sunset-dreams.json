@@ -1,12 +1,11 @@
 {
-  "title": "Sueños del Atardecer",
+  "title": "Flores",
   "artist": "Lida",
   "price": 230000,
   "currency": "COP",
   "description": "Una evocadora pintura al óleo que captura la hora dorada sobre una costa serena.",
   "category": "painting",
   "image": "/images/products/sunset-dreams.webp",
-  "dimensions": "60cm x 80cm",
   "available": true,
   "featured": true,
   "tags": ["paisaje", "oleo", "contemporaneo"]

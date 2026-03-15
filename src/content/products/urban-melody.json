@@ -1,12 +1,11 @@
 {
-  "title": "Melodía Urbana",
+  "title": "Joyero",
   "artist": "Lida",
-  "price": 1120000,
+  "price": 80000,
   "currency": "COP",
   "description": "Un vibrante paisaje urbano que captura el ritmo de la vida nocturna de la ciudad.",
   "category": "sculpture",
   "image": "/images/products/urban-melody.webp",
-  "dimensions": "40cm x 60cm",
   "available": true,
   "featured": false,
   "tags": ["paisaje-urbano", "tecnica-mixta", "contemporaneo"]
