@@ -14,23 +14,13 @@ interface Props {
 }
 
 import { formatPrice } from '../utils/formatters';
+import { translateCategory } from '../utils/translations';
 
 const { slug, title, artist, price, currency, image, category, available, width = 800, height = 1000 } = Astro.props;
-
-const categoryTranslations: Record<string, string> = {
-  painting: 'Pintura',
-  sculpture: 'Escultura',
-  photography: 'Fotografía',
-  digital: 'Digital',
-  print: 'Impresión',
-  'mixed-media': 'Técnica Mixta', // Added from previous task
-};
-
-const displayedCategory = categoryTranslations[category] || category; // Fallback to English if not found
 ---
 
 <article class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-  <a href={`/product/${slug}`} class="block">
+  <a href={`/producto/${slug}`} class="block">
     <!-- Image Container -->
     <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
       <img 
@@ -44,7 +34,7 @@ const displayedCategory = categoryTranslations[category] || category; // Fallbac
       
       <!-- Category Badge -->
       <span class="absolute top-4 left-4 bg-gallery-pink text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
-        {displayedCategory}
+        {translateCategory(category)}
       </span>
       
       <!-- Availability Badge -->
