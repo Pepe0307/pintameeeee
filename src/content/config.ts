@@ -2,14 +2,14 @@ import { defineCollection, z } from 'astro:content';
 
 const productsCollection = defineCollection({
   type: 'data',
-  schema: z.object({
+  schema: ({ image }) => z.object({
     title: z.string(),
     artist: z.string(),
     price: z.number(),
     currency: z.string().default('COP'),
     description: z.string(),
     category: z.enum(['painting', 'sculpture', 'photography', 'digital', 'print']),
-    image: z.string(),
+    image: image(),
     dimensions: z.string().optional(),
     available: z.boolean().default(true),
     featured: z.boolean().default(false),

@@ -5,30 +5,25 @@ interface Props {
   artist: string;
   price: number;
   currency: string;
-  image: string;
+  image: any; // Type of image from Content Collection image()
   category: string;
   available: boolean;
-  // Add optional width and height for the image to prevent layout shifts
-  width?: number;
-  height?: number;
 }
 
+import { Image } from 'astro:assets';
 import { formatPrice } from '../utils/formatters';
 import { translateCategory } from '../utils/translations';
 
-const { slug, title, artist, price, currency, image, category, available, width = 800, height = 1000 } = Astro.props;
+const { slug, title, artist, price, currency, image, category, available } = Astro.props;
 ---
 
 <article class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
   <a href={`/producto/${slug}`} class="block">
     <!-- Image Container -->
     <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-      <img 
+      <Image 
         src={image} 
         alt={title}
-        width={width}
-        height={height}
-        loading="lazy"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
       
