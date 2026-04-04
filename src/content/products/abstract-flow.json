@@ -5,7 +5,7 @@
   "currency": "COP",
   "description": "Pieza acrílica dinámica que explora el movimiento y la teoría del color.",
   "category": "painting",
-  "image": "/images/products/abstract-flow.webp",
+  "image": "../../assets/products/abstract-flow.webp",
   "available": true,
   "featured": true,
   "tags": ["abstracto", "acrilico", "moderno"]

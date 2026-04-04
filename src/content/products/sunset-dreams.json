@@ -5,7 +5,7 @@
   "currency": "COP",
   "description": "Una evocadora pintura al óleo que captura la hora dorada sobre una costa serena.",
   "category": "sculpture",
-  "image": "/images/products/sunset-dreams.webp",
+  "image": "../../assets/products/sunset-dreams.webp",
   "available": true,
   "featured": true,
   "tags": ["paisaje", "oleo", "contemporaneo"]

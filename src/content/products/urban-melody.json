@@ -5,7 +5,7 @@
   "currency": "COP",
   "description": "Un vibrante paisaje urbano que captura el ritmo de la vida nocturna de la ciudad.",
   "category": "sculpture",
-  "image": "/images/products/urban-melody.webp",
+  "image": "../../assets/products/urban-melody.webp",
   "available": true,
   "featured": true,
   "tags": ["paisaje-urbano", "tecnica-mixta", "contemporaneo"]
