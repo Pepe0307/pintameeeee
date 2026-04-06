@@ -58,7 +58,7 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
           {productsToDisplay.map(product => (
             <div class="product-item" data-category={product.category}>
               <ProductCard 
-                slug={product.id.toString()}
+                slug={product.id?.toString() || ''}
                 title={product.title}
                 artist={product.artist}
                 price={product.price}
@@ -75,9 +75,6 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
           <p class="text-gray-500 text-xl">Nuestra colección se está preparando. ¡Vuelve pronto!</p>
         </div>
       )}
-    </div>
-  </section>
-</BaseLayout>
     </div>
   </section>
 </BaseLayout>
