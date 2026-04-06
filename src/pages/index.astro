@@ -12,6 +12,8 @@ const { data: featuredProducts, error } = await supabase
 if (error) {
   console.error('Error fetching featured products:', error);
 }
+
+const productsToDisplay = featuredProducts || [];
 ---
 
 <BaseLayout 
@@ -46,7 +48,7 @@ if (error) {
       </div>
       
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featuredProducts?.map(product => (
+        {productsToDisplay.map(product => (
           <ProductCard 
             slug={product.id.toString()}
             title={product.title}
