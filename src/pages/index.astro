@@ -4,11 +4,6 @@ import ProductCard from '../components/ProductCard.astro';
 import { supabase } from '../lib/supabase';
 import { SITE_CONFIG } from '../utils/config';
 
-const { data: featuredProducts, error } = await supabase
-  .from('products')
-  .select('*')
-  .eq('featured', true);
-
 const { data: featuredProducts, error } = supabase 
   ? await supabase.from('products').select('*').eq('featured', true)
   : { data: null, error: new Error('Supabase client not initialized') };
