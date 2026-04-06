@@ -1,4 +1,8 @@
-export const formatPrice = (price: number, currency: string = 'COP') => {
+export const formatPrice = (price: number | null | undefined, currency: string = 'COP') => {
+  if (price === null || price === undefined) {
+    return 'Precio por definir';
+  }
+  
   const formatted = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: currency,
