@@ -2,7 +2,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WhatsAppButton from '../../components/WhatsAppButton.astro';
 import { supabase } from '../../lib/supabase';
-import { Image } from 'astro:assets';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
 import { translateCategory } from '../../utils/translations';
@@ -38,11 +37,12 @@ const { title, artist, price, currency, description, image_url, category, dimens
         <!-- Image -->
         <div class="relative">
           <div class="aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
-            <Image 
+            <img 
               src={image_url} 
               alt={title}
-              width={800}
-              height={1000}
+              width="800"
+              height="1000"
+              decoding="async"
               class="w-full h-full object-cover"
             />
           </div>
