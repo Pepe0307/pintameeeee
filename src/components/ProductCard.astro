@@ -5,7 +5,7 @@ interface Props {
   artist: string;
   price: number;
   currency: string;
-  image: any; // Type of image from Content Collection image()
+  image: string; // Updated to string for remote URL
   category: string;
   available: boolean;
 }
@@ -24,6 +24,8 @@ const { slug, title, artist, price, currency, image, category, available } = Ast
       <Image 
         src={image} 
         alt={title}
+        width={400}
+        height={500}
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
       

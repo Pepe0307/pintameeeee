@@ -1,11 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/ProductCard.astro';
-import { getCollection } from 'astro:content';
+import { supabase } from '../lib/supabase';
 import { SITE_CONFIG } from '../utils/config';
 
-const allProducts = await getCollection('products');
-const featuredProducts = allProducts.filter(product => product.data.featured);
+const { data: featuredProducts, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('featured', true);
+
+if (error) {
+  console.error('Error fetching featured products:', error);
+}
 ---
 
 <BaseLayout 
@@ -40,16 +46,16 @@ const featuredProducts = allProducts.filter(product => product.data.featured);
       </div>
       
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featuredProducts.map(product => (
+        {featuredProducts?.map(product => (
           <ProductCard 
-            slug={product.id.replace('.json', '')}
-            title={product.data.title}
-            artist={product.data.artist}
-            price={product.data.price}
-            currency={product.data.currency}
-            image={product.data.image}
-            category={product.data.category}
-            available={product.data.available}
+            slug={product.id.toString()}
+            title={product.title}
+            artist={product.artist}
+            price={product.price}
+            currency={product.currency}
+            image={product.image_url}
+            category={product.category}
+            available={product.available}
           />
         ))}
       </div>

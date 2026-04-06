@@ -1,25 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WhatsAppButton from '../../components/WhatsAppButton.astro';
-import { getCollection } from 'astro:content';
+import { supabase } from '../../lib/supabase';
 import { Image } from 'astro:assets';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
 import { translateCategory } from '../../utils/translations';
 
-export async function getStaticPaths() {
-  const products = await getCollection('products');
-  return products.map(product => ({
-    params: { slug: product.id.replace('.json', '') },
-    props: { product },
-  }));
+const { slug } = Astro.params;
+
+const { data: product, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('id', slug)
+  .single();
+
+if (error || !product) {
+  return Astro.redirect('/404');
 }
 
-const { product } = Astro.props;
-const { title, artist, price, currency, description, image, category, dimensions, available, tags } = product.data;
+const { title, artist, price, currency, description, image_url, category, dimensions, available, tags } = product;
 ---
 
-<BaseLayout title={title} description={description} image={image.src}>
+<BaseLayout title={title} description={description} image={image_url}>
   <section class="py-16 px-4">
     <div class="container mx-auto max-w-6xl">
       <!-- Breadcrumb -->
@@ -38,8 +41,10 @@ const { title, artist, price, currency, description, image, category, dimensions
         <div class="relative">
           <div class="aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
             <Image 
-              src={image} 
+              src={image_url} 
               alt={title}
+              width={800}
+              height={1000}
               class="w-full h-full object-cover"
             />
           </div>
