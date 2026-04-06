@@ -9,11 +9,9 @@ import { translateCategory } from '../../utils/translations';
 
 const { slug } = Astro.params;
 
-const { data: product, error } = await supabase
-  .from('products')
-  .select('*')
-  .eq('id', slug)
-  .single();
+const { data: product, error } = supabase
+  ? await supabase.from('products').select('*').eq('id', slug).single()
+  : { data: null, error: new Error('Supabase client not initialized') };
 
 if (error || !product) {
   return Astro.redirect('/404');

@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
+import { createClient } from '@supabase/supabase-js';
+
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase environment variables are missing! Check your Cloudflare Dashboard.');
-}
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+if (!supabase) {
+  console.error('SUPABASE ERROR: Environment variables are missing. Initialization skipped.');
+}

@@ -4,13 +4,12 @@ import ProductCard from '../components/ProductCard.astro';
 import { supabase } from '../lib/supabase';
 import { translateCategory } from '../utils/translations';
 
-const { data: allProducts, error } = await supabase
-  .from('products')
-  .select('*')
-  .order('created_at', { ascending: false });
+const { data: allProducts, error } = supabase 
+  ? await supabase.from('products').select('*').order('created_at', { ascending: false })
+  : { data: null, error: new Error('Supabase client not initialized') };
 
 if (error) {
-  console.error('Error fetching products:', error);
+  console.error('Fetch error:', error.message);
 }
 
 const productsToDisplay = allProducts || [];
@@ -54,22 +53,31 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
       </div>
       
       <!-- Products Grid -->
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="products-grid">
-        {productsToDisplay.map(product => (
-          <div class="product-item" data-category={product.category}>
-            <ProductCard 
-              slug={product.id.toString()}
-              title={product.title}
-              artist={product.artist}
-              price={product.price}
-              currency={product.currency}
-              image={product.image_url}
-              category={product.category}
-              available={product.available}
-            />
-          </div>
-        ))}
-      </div>
+      {productsToDisplay.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="products-grid">
+          {productsToDisplay.map(product => (
+            <div class="product-item" data-category={product.category}>
+              <ProductCard 
+                slug={product.id.toString()}
+                title={product.title}
+                artist={product.artist}
+                price={product.price}
+                currency={product.currency}
+                image={product.image_url}
+                category={product.category}
+                available={product.available}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-20 bg-gray-50 rounded-2xl">
+          <p class="text-gray-500 text-xl">Nuestra colección se está preparando. ¡Vuelve pronto!</p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
     </div>
   </section>
 </BaseLayout>

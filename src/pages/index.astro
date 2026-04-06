@@ -9,8 +9,12 @@ const { data: featuredProducts, error } = await supabase
   .select('*')
   .eq('featured', true);
 
+const { data: featuredProducts, error } = supabase 
+  ? await supabase.from('products').select('*').eq('featured', true)
+  : { data: null, error: new Error('Supabase client not initialized') };
+
 if (error) {
-  console.error('Error fetching featured products:', error);
+  console.error('Fetch error:', error.message);
 }
 
 const productsToDisplay = featuredProducts || [];
@@ -47,20 +51,34 @@ const productsToDisplay = featuredProducts || [];
         </p>
       </div>
       
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {productsToDisplay.map(product => (
-          <ProductCard 
-            slug={product.id.toString()}
-            title={product.title}
-            artist={product.artist}
-            price={product.price}
-            currency={product.currency}
-            image={product.image_url}
-            category={product.category}
-            available={product.available}
-          />
-        ))}
+      {productsToDisplay.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {productsToDisplay.map(product => (
+            <ProductCard 
+              slug={product.id.toString()}
+              title={product.title}
+              artist={product.artist}
+              price={product.price}
+              currency={product.currency}
+              image={product.image_url}
+              category={product.category}
+              available={product.available}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12 bg-gray-50 rounded-2xl">
+          <p class="text-gray-500">Estamos actualizando nuestra galería. Vuelve pronto.</p>
+        </div>
+      )}
+      
+      <div class="text-center mt-12">
+        <a href="/catalogo" class="btn-primary">
+          Ver Todas las Obras →
+        </a>
       </div>
+    </div>
+  </section>
       
       <div class="text-center mt-12">
         <a href="/catalogo" class="btn-primary">
