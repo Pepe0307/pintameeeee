@@ -12,9 +12,9 @@
   --color-gallery-pink: #ee3047;
   --color-gallery-dark-pink: #d70734;
   --color-gallery-wine: #b80028;
-  --color-gallery-bone: ##fffde4;
+  --color-gallery-bone: #fffde4;
   
-  --font-display: 'Fraunces', regular;
+  --font-display: 'Playfair Display', serif;
   --font-body: 'Inter', sans-serif;
 }
 
@@ -25,11 +25,14 @@ html {
 
 body {
   background-color: var(--color-gallery-cream);
-  color: var(--color-gallery-cream);
-  font-family: var(--font-display);
+  color: var(--color-gallery-charcoal);
+  font-family: var(--font-body);
 }
 
 /* Custom components */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
 .btn-primary {
   background-color: var(--color-gallery-wine);
   color: white;
