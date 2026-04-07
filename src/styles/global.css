@@ -14,7 +14,7 @@
   --color-gallery-wine: #b80028;
   --color-gallery-bone: #fffde4;
   
-  --font-display: 'Playfair Display', serif;
+  --font-display: 'Fraunces', regular;
   --font-body: 'Inter', sans-serif;
 }
 
@@ -26,13 +26,10 @@ html {
 body {
   background-color: var(--color-gallery-cream);
   color: var(--color-gallery-charcoal);
-  font-family: var(--font-body);
+  font-family: var(--font-display);
 }
 
 /* Custom components */
-h1, h2, h3, h4, .font-display {
-  font-family: var(--font-display);
-}
 .btn-primary {
   background-color: var(--color-gallery-wine);
   color: white;
