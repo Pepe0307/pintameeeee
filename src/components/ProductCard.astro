@@ -1,39 +1,49 @@
 ---
 interface Props {
   slug: string;
-  title: string;
-  artist: string;
-  price: number;
-  currency: string;
-  image: any; // Type of image from Content Collection image()
-  category: string;
-  available: boolean;
+  title: string | null;
+  artist: string | null;
+  price: number | null;
+  currency: string | null;
+  image: string | null;
+  category: string | null;
+  available: boolean | null;
 }
 
-import { Image } from 'astro:assets';
 import { formatPrice } from '../utils/formatters';
 import { translateCategory } from '../utils/translations';
 
 const { slug, title, artist, price, currency, image, category, available } = Astro.props;
+
+const safeTitle = title || 'Obra Sin Título';
+const safeArtist = artist || 'Artista Desconocido';
+const safeCurrency = currency || 'COP';
+const safeImage = image || '/images/logo.png'; 
+const safeCategory = category || 'painting';
+const safeAvailable = available !== false; 
 ---
 
 <article class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
   <a href={`/producto/${slug}`} class="block">
     <!-- Image Container -->
     <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-      <Image 
-        src={image} 
-        alt={title}
+      <img 
+        src={safeImage} 
+        alt={safeTitle}
+        width="400"
+        height="500"
+        loading="lazy"
+        decoding="async"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
       
       <!-- Category Badge -->
       <span class="absolute top-4 left-4 bg-gallery-pink text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
-        {translateCategory(category)}
+        {translateCategory(safeCategory)}
       </span>
       
       <!-- Availability Badge -->
-      {!available && (
+      {!safeAvailable && (
         <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
           <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
             Vendido
@@ -45,11 +55,11 @@ const { slug, title, artist, price, currency, image, category, available } = Ast
     <!-- Content -->
     <div class="p-5">
       <h3 class="font-display text-xl font-semibold text-gallery-charcoal group-hover:text-gallery-gold transition-colors">
-        {title}
+        {safeTitle}
       </h3>
-      <p class="text-gray-500 mt-1">{artist}</p>
+      <p class="text-gray-500 mt-1">{safeArtist}</p>
       <p class="text-gallery-gold font-semibold text-lg mt-3">
-        {formatPrice(price, currency)}
+        {formatPrice(price, safeCurrency)}
       </p>
     </div>
   </a>
