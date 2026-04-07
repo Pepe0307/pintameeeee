@@ -12,7 +12,7 @@
   --color-gallery-pink: #ee3047;
   --color-gallery-dark-pink: #d70734;
   --color-gallery-wine: #b80028;
-  --color-gallery-bone: ##fffde4;
+  --color-gallery-bone: #fffde4;
   
   --font-display: 'Fraunces', regular;
   --font-body: 'Inter', sans-serif;
@@ -25,7 +25,7 @@ html {
 
 body {
   background-color: var(--color-gallery-cream);
-  color: var(--color-gallery-cream);
+  color: var(--color-gallery-charcoal);
   font-family: var(--font-display);
 }
 

@@ -1,46 +1,40 @@
-# Astro Starter Kit: Basics
+# Pintame - Galería de Arte de Lida
 
-```sh
-npm create astro@latest -- --template basics
-```
+Pintame es una galería de arte en línea y plataforma de comercio electrónico diseñada para exhibir y vender obras de arte únicas, hechas a mano y pintadas a mano por Lida, desde Colombia.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 🚀 Tecnologías
 
-## 🚀 Project Structure
+- **Framework:** [Astro v5](https://astro.build/) (SSR)
+- **Backend:** [Supabase](https://supabase.com/) (PostgreSQL & Storage)
+- **Estilos:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Hosting:** [Cloudflare Pages](https://pages.cloudflare.com/)
+- **Optimización de Imágenes:** [Sharp](https://sharp.pixelplumbing.com/)
 
-Inside of your Astro project, you'll see the following folders and files:
+## 🛠️ Estructura del Proyecto
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+- `src/pages/`: Rutas del sitio (Inicio, Catálogo, Detalle de Producto).
+- `src/components/`: Componentes reutilizables de la interfaz.
+- `src/layouts/`: Plantillas base para las páginas.
+- `src/lib/supabase.ts`: Configuración del cliente de Supabase.
+- `src/utils/`: Funciones de utilidad y configuración global.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## ⚙️ Configuración
 
-## 🧞 Commands
+El proyecto requiere las siguientes variables de entorno:
 
-All commands are run from the root of the project, from a terminal:
+- `PUBLIC_SUPABASE_URL`
+- `PUBLIC_SUPABASE_ANON_KEY`
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## 🧞 Comandos
 
-## 👀 Want to learn more?
+| Comando | Acción |
+| :--- | :--- |
+| `npm install` | Instala las dependencias |
+| `npm run dev` | Inicia el servidor de desarrollo en `localhost:4321` |
+| `npm run build` | Compila el sitio para producción en `./dist/` |
+| `npm run preview` | Previsualiza la compilación localmente con `wrangler` |
+| `npm run astro ...` | Ejecuta comandos de la CLI de Astro |
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## 📦 Despliegue
+
+El sitio está configurado para desplegarse automáticamente en **Cloudflare Pages** a través de la integración con GitHub.
