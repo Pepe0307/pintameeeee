@@ -25,9 +25,9 @@ const { title, artist, price, currency, description, image_url, category, dimens
       <!-- Breadcrumb -->
       <nav class="mb-8">
         <ol class="flex items-center gap-2 text-sm text-gray-500">
-          <li><a href="/" class="hover:text-gallery-gold">Inicio</a></li>
+          <li><a href="/" class="hover:text-gallery-newpink">Inicio</a></li>
           <li>/</li>
-          <li><a href="/catalogo" class="hover:text-gallery-gold">Catálogo</a></li>
+          <li><a href="/catalogo" class="hover:text-gallery-newpink">Catálogo</a></li>
           <li>/</li>
           <li class="text-gallery-charcoal">{title}</li>
         </ol>
@@ -55,7 +55,7 @@ const { title, artist, price, currency, description, image_url, category, dimens
         
         <!-- Details -->
         <div class="flex flex-col">
-          <span class="text-gallery-gold font-medium uppercase tracking-wider text-sm mb-2">
+          <span class="text-gallery-newpink font-medium uppercase tracking-wider text-sm mb-2">
             {translateCategory(category)}
           </span>
           
@@ -67,7 +67,7 @@ const { title, artist, price, currency, description, image_url, category, dimens
             por {artist}
           </p>
           
-          <p class="text-3xl font-bold text-gallery-gold mb-6">
+          <p class="text-3xl font-bold text-gallery-newpink mb-6">
             {formatPrice(price, currency)}
           </p>
           
@@ -116,7 +116,7 @@ const { title, artist, price, currency, description, image_url, category, dimens
                 href={`https://wa.me/${SITE_CONFIG.whatsappNumber}?text=Estoy interesado en obras similares a: ${title}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-gallery-gold hover:underline mt-2 inline-block"
+                class="text-gallery-newpink hover:underline mt-2 inline-block"
               >
                 Solicitar Obras Similares
               </a>
@@ -126,4 +126,4 @@ const { title, artist, price, currency, description, image_url, category, dimens
       </div>
     </div>
   </section>
-</BaseLayout>
+</BaseLayout>ut>
