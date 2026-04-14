@@ -13,6 +13,9 @@
   --color-gallery-dark-pink: #d70734;
   --color-gallery-wine: #b80028;
   --color-gallery-bone: #fffde4;
+  --color-gallery-pinkpink: #fce4ec;
+  --color-gallery-pinpin: #f8bbd0;
+  --color-gallery-newpink: #f06292;
   
   --font-display: 'Fraunces', regular;
   --font-body: 'Inter', sans-serif;
@@ -31,7 +34,7 @@ body {
 
 /* Custom components */
 .btn-primary {
-  background-color: var(--color-gallery-wine);
+  background-color: var(--color-gallery-newpink);
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
