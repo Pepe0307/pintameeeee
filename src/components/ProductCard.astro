@@ -38,7 +38,7 @@ const safeAvailable = available !== false;
       />
       
       <!-- Category Badge -->
-      <span class="absolute top-4 left-4 bg-gallery-pink text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
+      <span class="absolute top-4 left-4 bg-gallery-newpink text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
         {translateCategory(safeCategory)}
       </span>
       
@@ -54,11 +54,11 @@ const safeAvailable = available !== false;
     
     <!-- Content -->
     <div class="p-5">
-      <h3 class="font-display text-xl font-semibold text-gallery-charcoal group-hover:text-gallery-gold transition-colors">
+      <h3 class="font-display text-xl font-semibold text-gallery-charcoal group-hover:text-gallery-newpink transition-colors">
         {safeTitle}
       </h3>
       <p class="text-gray-500 mt-1">{safeArtist}</p>
-      <p class="text-gallery-gold font-semibold text-lg mt-3">
+      <p class="text-gallery-newpink font-semibold text-lg mt-3">
         {formatPrice(price, safeCurrency)}
       </p>
     </div>
