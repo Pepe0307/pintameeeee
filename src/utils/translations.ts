@@ -1,8 +1,9 @@
 export const categoryTranslations: Record<string, string> = {
-  painting: 'Pintura',
-  sculpture: 'Escultura',
-  photography: 'Fotografía',
-  digital: 'Digital',
+  home: 'Hogar',
+  'jewelry-boxes': 'Joyeros',
+  accessories: 'Accesorios',
+  frames: 'Portarretratos',
+  '3d-print': 'Impresión 3D',
   print: 'Impresión',
   drawing: 'Dibujo',
   'digital-art': 'Arte Digital',
