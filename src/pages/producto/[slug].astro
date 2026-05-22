@@ -38,43 +38,27 @@ const allImages = [image_url, ...gallery].filter(Boolean);
         </ol>
       </nav>
       
-      <div class="grid lg:grid-cols-2 gap-12">
-        <!-- Gallery -->
-        <div class="flex flex-col gap-4">
-          <div class="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
-            <img 
-              id="main-image"
-              src={image_url} 
-              alt={title}
-              width="800"
-              height="1000"
-              decoding="async"
-              class="w-full h-full object-cover transition-opacity duration-300"
-            />
-            {!available && (
-              <div class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
-                Vendido
-              </div>
-            )}
-          </div>
-          
-          {allImages.length > 1 && (
-            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {allImages.map((img, index) => (
-                <button 
-                  class={`thumbnail-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${index === 0 ? 'border-gallery-newpink' : 'border-transparent hover:border-gray-300'}`}
-                  data-full={img}
-                  aria-label={`Ver imagen ${index + 1}`}
-                >
-                  <img src={img} alt="" class="w-full h-full object-cover" />
-                </button>
-              ))}
+      <div class="grid lg:grid-cols-2 gap-x-12 gap-y-6">
+        <!-- Main Image -->
+        <div class="order-1 relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
+          <img 
+            id="main-image"
+            src={image_url} 
+            alt={title}
+            width="800"
+            height="1000"
+            decoding="async"
+            class="w-full h-full object-cover transition-opacity duration-300"
+          />
+          {!available && (
+            <div class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
+              Vendido
             </div>
           )}
         </div>
         
         <!-- Details -->
-        <div class="flex flex-col">
+        <div class="order-3 lg:order-2 flex flex-col">
           <span class="text-gallery-newpink font-medium uppercase tracking-wider text-sm mb-2">
             {translateCategory(category)}
           </span>
@@ -143,6 +127,23 @@ const allImages = [image_url, ...gallery].filter(Boolean);
             </div>
           )}
         </div>
+
+        <!-- Thumbnails -->
+        {allImages.length > 1 && (
+          <div class="order-2 lg:order-3 lg:col-start-1">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {allImages.map((img, index) => (
+                <button 
+                  class={`thumbnail-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${index === 0 ? 'border-gallery-newpink' : 'border-transparent hover:border-gray-300'}`}
+                  data-full={img}
+                  aria-label={`Ver imagen ${index + 1}`}
+                >
+                  <img src={img} alt="" class="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   </section>
