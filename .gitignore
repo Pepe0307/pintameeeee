@@ -29,3 +29,7 @@ pnpm-debug.log*
 
 HOW_IT_WORKS.md
 HOW_TO_OPTIMIZE_IMAGES.md
+
+.vscode/
+
+docs/
