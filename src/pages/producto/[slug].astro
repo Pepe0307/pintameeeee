@@ -39,21 +39,36 @@ const allImages = [image_url, ...gallery].filter(Boolean);
       </nav>
       
       <div class="grid lg:grid-cols-2 gap-12">
-        <!-- Image -->
-        <div class="relative">
-          <div class="aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
+        <!-- Gallery -->
+        <div class="flex flex-col gap-4">
+          <div class="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
             <img 
+              id="main-image"
               src={image_url} 
               alt={title}
               width="800"
               height="1000"
               decoding="async"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover transition-opacity duration-300"
             />
+            {!available && (
+              <div class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
+                Vendido
+              </div>
+            )}
           </div>
-          {!available && (
-            <div class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium">
-              Vendido
+          
+          {allImages.length > 1 && (
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {allImages.map((img, index) => (
+                <button 
+                  class={`thumbnail-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${index === 0 ? 'border-gallery-newpink' : 'border-transparent hover:border-gray-300'}`}
+                  data-full={img}
+                  aria-label={`Ver imagen ${index + 1}`}
+                >
+                  <img src={img} alt="" class="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           )}
         </div>
