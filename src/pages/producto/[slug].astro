@@ -146,4 +146,38 @@ const allImages = [image_url, ...gallery].filter(Boolean);
       </div>
     </div>
   </section>
-</BaseLayout>ut>
+</BaseLayout>
+
+<script>
+  function setupGallery() {
+    const mainImage = document.getElementById('main-image') as HTMLImageElement;
+    const thumbnails = document.querySelectorAll('.thumbnail-btn');
+
+    if (!mainImage) return;
+
+    thumbnails.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const newSrc = btn.getAttribute('data-full');
+        if (newSrc) {
+          // Fade out
+          mainImage.style.opacity = '0';
+          
+          setTimeout(() => {
+            mainImage.src = newSrc;
+            mainImage.style.opacity = '1';
+          }, 150);
+
+          // Update active border
+          thumbnails.forEach(t => t.classList.remove('border-gallery-newpink'));
+          btn.classList.add('border-gallery-newpink');
+        }
+      });
+    });
+  }
+
+  // Run on initial load
+  setupGallery();
+
+  // Run on View Transitions (if enabled)
+  document.addEventListener('astro:after-swap', setupGallery);
+</script>ut>
