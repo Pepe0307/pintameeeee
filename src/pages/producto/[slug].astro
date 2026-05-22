@@ -16,7 +16,12 @@ if (error || !product) {
   return Astro.redirect('/404');
 }
 
-const { title, artist, price, currency, description, image_url, category, dimensions, available, tags } = product;
+const { title, artist, price, currency, description, image_url, category, dimensions, available, tags, gallery_images } = product;
+
+// Ensure gallery is an array
+const gallery = Array.isArray(gallery_images) ? gallery_images : [];
+// Combine main image with gallery for thumbnails
+const allImages = [image_url, ...gallery].filter(Boolean);
 ---
 
 <BaseLayout title={title} description={description} image={image_url}>
