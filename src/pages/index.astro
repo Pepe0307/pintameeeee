@@ -20,7 +20,9 @@ const productsToDisplay = featuredProducts || [];
   description={`${SITE_CONFIG.siteName} - Descubre y compra obras de arte únicas, hechas a mano y pintadas a mano por Lida. Explora su colección exclusiva desde Colombia.`}
 >
   <!-- Hero Section -->
-  <section class="relative h-[55vh] flex items-center justify-center bg-gallery-pinpin">
+  <section class="relative h-[55vh] flex items-center justify-center bg-cover bg-center bg-no-repeat" style="background-image: url('/images/hero-bg.jpg');">
+    <!-- Dark overlay to ensure the white text is readable over the image -->
+    <div class="absolute inset-0 bg-black/40 z-0"></div>
     <div class="relative z-10 text-center text-white px-4 max-w-4xl animate-fade-in-up">
       <h1 class="font-display text-5xl md:text-7xl font-bold mb-6 text-gallery-bone">
         Conoce el mundo de <span class="text-gallery-newpink">Píntame</span>
