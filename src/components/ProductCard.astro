@@ -12,6 +12,7 @@ interface Props {
 
 import { formatPrice } from '../utils/formatters';
 import { translateCategory } from '../utils/translations';
+import { Image } from 'astro:assets';
 
 const { slug, title, artist, price, currency, image, category, available } = Astro.props;
 
@@ -27,11 +28,11 @@ const safeAvailable = available !== false;
   <a href={`/producto/${slug}`} class="block">
     <!-- Image Container -->
     <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-      <img 
+      <Image 
         src={safeImage} 
         alt={safeTitle}
-        width="400"
-        height="500"
+        width={400}
+        height={500}
         loading="lazy"
         decoding="async"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
