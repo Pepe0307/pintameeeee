@@ -97,12 +97,19 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
       const category = btn.getAttribute('data-category');
       
       productItems.forEach(item => {
-        // Assert item to HTMLElement to access its style property
         const htmlItem = item as HTMLElement; 
+        
+        // Remove animation class to restart it later
+        htmlItem.classList.remove('animate-fade-in-up');
+        
         if (category === 'all' || htmlItem.getAttribute('data-category') === category) {
-          htmlItem.style.display = 'block';
+          htmlItem.removeAttribute('hidden');
+          // Add a tiny delay to allow browser to register the removal of hidden before animating
+          setTimeout(() => {
+            htmlItem.classList.add('animate-fade-in-up');
+          }, 10);
         } else {
-          htmlItem.style.display = 'none';
+          htmlItem.setAttribute('hidden', '');
         }
       });
     });

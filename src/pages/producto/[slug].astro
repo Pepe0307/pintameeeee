@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
 import { translateCategory } from '../../utils/translations';
+import { Image } from 'astro:assets';
 
 const { slug } = Astro.params;
 
@@ -41,12 +42,12 @@ const allImages = [image_url, ...gallery].filter(Boolean);
       <div class="grid lg:grid-cols-2 gap-x-12 gap-y-6">
         <!-- Main Image -->
         <div class="order-1 relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100">
-          <img 
+          <Image 
             id="main-image"
             src={image_url} 
-            alt={title}
-            width="800"
-            height="1000"
+            alt={title || 'Obra de arte'}
+            width={800}
+            height={1000}
             decoding="async"
             class="w-full h-full object-cover transition-opacity duration-300"
           />
@@ -138,7 +139,7 @@ const allImages = [image_url, ...gallery].filter(Boolean);
                   data-full={img}
                   aria-label={`Ver imagen ${index + 1}`}
                 >
-                  <img src={img} alt="" class="w-full h-full object-cover" />
+                  <Image src={img} alt="Thumbnail" width={80} height={80} class="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
