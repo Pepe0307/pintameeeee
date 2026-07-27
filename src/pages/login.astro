@@ -5,8 +5,8 @@ import { createSupabaseServerClient } from '../lib/supabase-ssr';
 const supabase = createSupabaseServerClient(Astro.cookies);
 
 // If already logged in, redirect to admin
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
+const { data: { user }, error: authError } = await supabase.auth.getUser();
+if (user && !authError) {
   return Astro.redirect('/admin');
 }
 
