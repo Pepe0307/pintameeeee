@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { createSupabaseServerClient } from '../../lib/supabase-ssr';
+import { categoryTranslations } from '../../utils/translations';
+
+const supabase = createSupabaseServerClient(Astro.cookies);
+const { data: { session } } = await supabase.auth.getSession();
+
+if (!session) {
+  return Astro.redirect('/login');
+}
+---
+
+<BaseLayout title="Panel de Administración - Pintame" description="Añade nuevos productos a la galería">
+  <main class="min-h-screen bg-zinc-950 p-6 relative">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-10 max-w-5xl mx-auto glass-panel p-4 rounded-2xl animate-fade-in-up">
+      <h1 class="text-2xl font-fraunces text-white">Administración Pintame</h1>
+      <div class="flex items-center gap-4">
+        <span class="text-zinc-400 text-sm hidden sm:inline">{session.user.email}</span>
+        <form action="/api/auth/signout" method="POST">
+          <button type="submit" class="bg-red-500/10 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-xl text-sm transition-colors border border-red-500/20">
+            Cerrar Sesión
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <!-- Form Section -->
+    <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left col: Info -->
+      <div class="lg:col-span-1 animate-fade-in-up" style="animation-delay: 100ms;">
+        <div class="glass-panel p-6 rounded-3xl sticky top-6">
+          <h2 class="text-xl font-fraunces text-white mb-4">Añadir Obra</h2>
+          <p class="text-zinc-400 text-sm mb-6">
+            Completa los detalles de la nueva obra para agregarla al catálogo. La imagen se subirá automáticamente a Supabase.
+          </p>
+          <div class="p-4 bg-primary/10 border border-primary/20 rounded-xl">
+            <p class="text-primary text-sm">
+              <strong>Importante:</strong> Asegúrate de que exista un bucket público llamado <code>products</code> en tu proyecto de Supabase Storage para que las imágenes se guarden correctamente.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right col: Form -->
+      <div class="lg:col-span-2 glass-panel p-6 sm:p-8 rounded-3xl animate-fade-in-up" style="animation-delay: 200ms;">
+        <form id="productForm" class="space-y-6">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Título de la Obra *</label>
+              <input type="text" name="title" required class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Artista</label>
+              <input type="text" name="artist" value="Píntame" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Precio (COP) *</label>
+              <input type="number" name="price" required class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Categoría *</label>
+              <select name="category" required class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none">
+                {Object.entries(categoryTranslations).map(([key, label]) => (
+                  <option value={key} class="bg-zinc-900">{label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Imagen Principal *</label>
+            <input type="file" name="image" accept="image/*" required class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-black hover:file:bg-primary/90 transition-all" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Dimensiones</label>
+            <input type="text" name="dimensions" placeholder="ej. 50x70 cm" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Descripción</label>
+            <textarea name="description" rows="4" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"></textarea>
+          </div>
+
+          <div class="flex gap-6">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="available" checked class="w-5 h-5 rounded border-white/10 bg-black/30 text-primary focus:ring-primary/50 focus:ring-offset-0" />
+              <span class="text-zinc-300 text-sm">Disponible para venta</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="featured" class="w-5 h-5 rounded border-white/10 bg-black/30 text-primary focus:ring-primary/50 focus:ring-offset-0" />
+              <span class="text-zinc-300 text-sm">Destacar en inicio</span>
+            </label>
+          </div>
+
+          <div id="statusMessage" class="hidden p-4 rounded-xl text-sm font-medium"></div>
+
+          <button type="submit" id="submitBtn" class="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] flex justify-center items-center gap-2">
+            <span>Subir Obra</span>
+            <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-black hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('productForm') as HTMLFormElement;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+  const spinner = document.getElementById('loadingSpinner') as HTMLElement;
+  const statusMsg = document.getElementById('statusMessage') as HTMLElement;
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // UI Update
+      submitBtn.disabled = true;
+      spinner.classList.remove('hidden');
+      statusMsg.classList.add('hidden');
+      statusMsg.className = 'hidden p-4 rounded-xl text-sm font-medium'; // reset classes
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('/api/admin/product', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Error desconocido');
+        }
+
+        // Success
+        statusMsg.textContent = '¡Obra subida con éxito!';
+        statusMsg.classList.add('bg-green-500/10', 'text-green-400', 'border', 'border-green-500/30');
+        statusMsg.classList.remove('hidden');
+
+        // Guardar la categoría seleccionada antes del reset
+        const categorySelect = form.querySelector('select[name="category"]') as HTMLSelectElement;
+        const lastCategory = categorySelect?.value;
+
+        form.reset();
+
+        // Restaurar la última categoría seleccionada
+        if (categorySelect && lastCategory) {
+          categorySelect.value = lastCategory;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err: any) {
+        // Error
+        statusMsg.textContent = err.message;
+        statusMsg.classList.add('bg-red-500/10', 'text-red-400', 'border', 'border-red-500/30');
+        statusMsg.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    });
+  }
+</script>
