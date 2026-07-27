@@ -3,9 +3,9 @@ import { createSupabaseServerClient } from '../../../lib/supabase-ssr';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const supabase = createSupabaseServerClient(cookies) as any;
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (authError || !user) {
     return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
   }
 
