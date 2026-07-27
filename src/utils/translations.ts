@@ -1,6 +1,7 @@
 export const categoryTranslations: Record<string, string> = {
   home: 'Hogar',
   'jewelry-boxes': 'Joyeros',
+  earrings: 'Aretes',
   accessories: 'Accesorios',
   frames: 'Portarretratos',
   '3d-print': 'Impresión 3D',
