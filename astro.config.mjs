@@ -5,7 +5,7 @@ import cloudflare from '@astrojs/cloudflare';
 
 // Dummy comment to trigger deployment test
 export default defineConfig({
-  site: 'https://your-art-gallery.com',
+  site: 'https://pintameeeee.com',
   output: 'server',
   adapter: cloudflare({
     imageService: 'compile'
