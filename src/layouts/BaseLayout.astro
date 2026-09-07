@@ -8,12 +8,14 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  ogType?: string;
 }
 
 const { 
   title, 
   description = 'Descubre piezas de arte únicas de artistas talentosos',
-  image = '/images/logo.png' 
+  image = '/images/logo.png',
+  ogType = 'website'
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'http://localhost:4321');
@@ -29,11 +31,16 @@ const socialImageURL = new URL(image, Astro.site || 'http://localhost:4321');
   <!-- Primary Meta Tags -->
   <title>{title} | {SITE_CONFIG.siteName}</title>
   <meta name="description" content={description} />
-  <link rel="icon" type="image/png" href="/images/p.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
   <link rel="canonical" href={canonicalURL} />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:locale" content="es_CO" />
+  <link rel="preconnect" href="https://jxncyzrbjhoydsmjwsap.supabase.co" />
+  <link rel="dns-prefetch" href="https://jxncyzrbjhoydsmjwsap.supabase.co" />
 
   <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={ogType} />
   <meta property="og:url" content={canonicalURL} />
   <meta property="og:title" content={`${title} | ${SITE_CONFIG.siteName}`} />
   <meta property="og:description" content={description} />

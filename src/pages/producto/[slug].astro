@@ -25,7 +25,7 @@ const gallery = Array.isArray(gallery_images) ? gallery_images : [];
 const allImages = [image_url, ...gallery].filter(Boolean);
 ---
 
-<BaseLayout title={title} description={description} image={image_url}>
+<BaseLayout title={title} description={description} image={image_url} ogType="product">
   <section class="py-16 px-4">
     <div class="container mx-auto max-w-6xl">
       <!-- Breadcrumb -->
@@ -139,7 +139,7 @@ const allImages = [image_url, ...gallery].filter(Boolean);
                   data-full={img}
                   aria-label={`Ver imagen ${index + 1}`}
                 >
-                  <Image src={img} alt="Thumbnail" width={80} height={80} class="w-full h-full object-cover" />
+                  <Image src={img} alt={`${title || 'Producto'} - imagen ${index + 1}`} width={80} height={80} class="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -182,4 +182,4 @@ const allImages = [image_url, ...gallery].filter(Boolean);
 
   // Run on View Transitions (if enabled)
   document.addEventListener('astro:after-swap', setupGallery);
-</script>ut>
+</script>
