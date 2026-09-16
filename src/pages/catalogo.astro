@@ -33,30 +33,50 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
       </div>
       
       <!-- Filters -->
-      <div class="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
-        <button 
-          class="filter-btn active px-5 py-2 rounded-full border-2 border-gallery-newpink 
-                 bg-gallery-newpink text-white transition-all"
-          data-category="all"
-        >
-          Todos
-        </button>
-        {categories.map(category => (
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <div class="flex flex-wrap gap-3">
           <button 
-            class="filter-btn px-5 py-2 rounded-full border-2 border-gallery-newpink 
-                   text-gallery-newpink hover:bg-gallery-newpink hover:text-white transition-all capitalize"
-            data-category={category}
+            class="filter-btn active px-5 py-2 rounded-full border-2 border-gallery-newpink 
+                   bg-gallery-newpink text-white transition-all"
+            data-category="all"
           >
-            {translateCategory(category)}
+            Todos
           </button>
-        ))}
+          {categories.map(category => (
+            <button 
+              class="filter-btn px-5 py-2 rounded-full border-2 border-gallery-newpink 
+                     text-gallery-newpink hover:bg-gallery-newpink hover:text-white transition-all capitalize"
+              data-category={category}
+            >
+              {translateCategory(category)}
+            </button>
+          ))}
+        </div>
+
+        <!-- Sort -->
+        <select 
+          id="sort-select" 
+          class="appearance-none pl-4 pr-8 py-2 rounded-full border-2 border-gallery-newpink text-sm text-gallery-charcoal bg-white bg-no-repeat focus:outline-none focus:border-gallery-dark-pink transition-colors cursor-pointer"
+          style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22%232D2D2D%22><path fill-rule=%22evenodd%22 d=%22M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z%22 clip-rule=%22evenodd%22/></svg>'); background-position: right 0.75rem center; background-size: 1rem;"
+        >
+          <option value="newest">Más recientes</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="name-asc">Nombre: A - Z</option>
+        </select>
       </div>
       
       <!-- Products Grid -->
       {productsToDisplay.length > 0 ? (
         <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-fade-in-up" style="animation-delay: 0.2s;" id="products-grid">
           {productsToDisplay.map(product => (
-            <div class="product-item" data-category={product.category}>
+            <div 
+              class="product-item" 
+              data-category={product.category}
+              data-price={product.price ?? 0}
+              data-title={product.title ?? ''}
+              data-created={product.created_at ?? ''}
+            >
               <ProductCard 
                 slug={product.id?.toString() || ''}
                 title={product.title}
@@ -80,38 +100,65 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
 </BaseLayout>
 
 <script>
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const productItems = document.querySelectorAll('.product-item');
-  
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Update active state
-      filterBtns.forEach(b => {
-        b.classList.remove('active', 'bg-gallery-newpink', 'text-white');
-        b.classList.add('text-gallery-newpink');
-      });
-      btn.classList.add('active', 'bg-gallery-newpink', 'text-white');
-      btn.classList.remove('text-gallery-newpink');
-      
-      // Filter products
-      const category = btn.getAttribute('data-category');
-      
-      productItems.forEach(item => {
-        const htmlItem = item as HTMLElement; 
-        
-        // Remove animation class to restart it later
-        htmlItem.classList.remove('animate-fade-in-up');
-        
-        if (category === 'all' || htmlItem.getAttribute('data-category') === category) {
-          htmlItem.removeAttribute('hidden');
-          // Add a tiny delay to allow browser to register the removal of hidden before animating
-          setTimeout(() => {
-            htmlItem.classList.add('animate-fade-in-up');
-          }, 10);
-        } else {
-          htmlItem.setAttribute('hidden', '');
+  document.addEventListener("DOMContentLoaded", () => {
+    const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+    const productItems = document.querySelectorAll<HTMLElement>('.product-item');
+    const sortSelect = document.getElementById('sort-select') as HTMLSelectElement | null;
+    const productsGrid = document.getElementById('products-grid');
+
+    let activeCategory = 'all';
+
+    function applyFilters() {
+      const items = Array.from(productItems);
+
+      // Sort
+      const sortValue = sortSelect?.value ?? 'newest';
+      items.sort((a, b) => {
+        switch (sortValue) {
+          case 'price-asc':
+            return Number(a.dataset.price ?? 0) - Number(b.dataset.price ?? 0);
+          case 'price-desc':
+            return Number(b.dataset.price ?? 0) - Number(a.dataset.price ?? 0);
+          case 'name-asc':
+            return (a.dataset.title ?? '').localeCompare(b.dataset.title ?? '', 'es');
+          case 'newest':
+          default:
+            return (b.dataset.created ?? '').localeCompare(a.dataset.created ?? '');
         }
       });
+
+      // Filter + reorder DOM
+      items.forEach(item => {
+        const cat = item.dataset.category ?? '';
+        const visible = activeCategory === 'all' || cat === activeCategory;
+
+        item.classList.remove('animate-fade-in-up');
+
+        if (visible) {
+          item.removeAttribute('hidden');
+          productsGrid?.appendChild(item);
+          setTimeout(() => item.classList.add('animate-fade-in-up'), 10);
+        } else {
+          item.setAttribute('hidden', '');
+        }
+      });
+    }
+
+    // Category buttons
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('active', 'bg-gallery-newpink', 'text-white');
+          b.classList.add('text-gallery-newpink');
+        });
+        btn.classList.add('active', 'bg-gallery-newpink', 'text-white');
+        btn.classList.remove('text-gallery-newpink');
+        activeCategory = btn.dataset.category ?? 'all';
+        applyFilters();
+      });
     });
+
+    // Sort select
+    sortSelect?.addEventListener('change', applyFilters);
   });
 </script>
