@@ -56,7 +56,8 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
         <!-- Sort -->
         <select 
           id="sort-select" 
-          class="px-4 py-2 rounded-full border-2 border-gallery-newpink text-sm text-gallery-charcoal bg-white focus:outline-none focus:border-gallery-dark-pink transition-colors cursor-pointer"
+          class="appearance-none pl-4 pr-8 py-2 rounded-full border-2 border-gallery-newpink text-sm text-gallery-charcoal bg-white bg-no-repeat focus:outline-none focus:border-gallery-dark-pink transition-colors cursor-pointer"
+          style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22%232D2D2D%22><path fill-rule=%22evenodd%22 d=%22M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z%22 clip-rule=%22evenodd%22/></svg>'); background-position: right 0.75rem center; background-size: 1rem;"
         >
           <option value="newest">Más recientes</option>
           <option value="price-asc">Precio: menor a mayor</option>
