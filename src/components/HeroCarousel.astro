@@ -1,0 +1,109 @@
+---
+interface Props {
+  images: string[];
+  /** Auto-advance interval in milliseconds (default: 5000) */
+  interval?: number;
+}
+
+const { images, interval = 5000 } = Astro.props;
+---
+
+<div class="hero-carousel absolute inset-0" data-interval={interval}>
+  {images.map((src, i) => (
+    <div
+      class:list={[
+        "hero-carousel__slide absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out",
+        i === 0 ? "opacity-100" : "opacity-0",
+      ]}
+      style={`background-image: url('${src}');`}
+      aria-hidden={i !== 0 ? "true" : undefined}
+    />
+  ))}
+
+  <!-- Dark overlay for text readability -->
+  <div class="absolute inset-0 bg-black/40 z-[1]"></div>
+
+  <!-- Dot indicators (only shown when there are multiple images) -->
+  {images.length > 1 && (
+    <div class="hero-carousel__dots absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2.5">
+      {images.map((_, i) => (
+        <button
+          class:list={[
+            "hero-carousel__dot w-2.5 h-2.5 rounded-full border-2 border-white/80 transition-all duration-300 cursor-pointer",
+            i === 0
+              ? "bg-white scale-110"
+              : "bg-white/30 hover:bg-white/60",
+          ]}
+          aria-label={`Ir a imagen ${i + 1}`}
+          data-index={i}
+        />
+      ))}
+    </div>
+  )}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const carousels = document.querySelectorAll<HTMLElement>(".hero-carousel");
+
+    carousels.forEach((carousel) => {
+      const slides = carousel.querySelectorAll<HTMLElement>(
+        ".hero-carousel__slide"
+      );
+      const dots = carousel.querySelectorAll<HTMLButtonElement>(
+        ".hero-carousel__dot"
+      );
+      const intervalMs = Number(carousel.dataset.interval) || 5000;
+
+      if (slides.length <= 1) return;
+
+      let current = 0;
+      let timer: ReturnType<typeof setInterval>;
+
+      function goTo(index: number) {
+        // Fade out current slide
+        slides[current].classList.replace("opacity-100", "opacity-0");
+        slides[current].setAttribute("aria-hidden", "true");
+        dots[current]?.classList.remove("bg-white", "scale-110");
+        dots[current]?.classList.add("bg-white/30");
+
+        // Fade in target slide
+        current = index;
+        slides[current].classList.replace("opacity-0", "opacity-100");
+        slides[current].removeAttribute("aria-hidden");
+        dots[current]?.classList.remove("bg-white/30");
+        dots[current]?.classList.add("bg-white", "scale-110");
+      }
+
+      function next() {
+        goTo((current + 1) % slides.length);
+      }
+
+      function startAutoPlay() {
+        timer = setInterval(next, intervalMs);
+      }
+
+      function resetAutoPlay() {
+        clearInterval(timer);
+        startAutoPlay();
+      }
+
+      // Dot click handlers
+      dots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const index = Number(dot.dataset.index);
+          if (index !== current) {
+            goTo(index);
+            resetAutoPlay();
+          }
+        });
+      });
+
+      // Pause on hover for better UX
+      carousel.addEventListener("mouseenter", () => clearInterval(timer));
+      carousel.addEventListener("mouseleave", startAutoPlay);
+
+      startAutoPlay();
+    });
+  });
+</script>
