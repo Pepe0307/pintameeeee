@@ -8,6 +8,9 @@
  * prices stored in Supabase, so a customer cannot tamper with the price
  * (e.g. by editing localStorage or calling this endpoint directly).
  *
+ * Before returning the signature, a 'pending' row is saved in the `orders`
+ * table so the Bold webhook (/api/bold-webhook) knows what was bought.
+ *
  * Request body: { items: Array<{ id: string; quantity: number }> }
  * Response:     { orderId, amount, currency, description, integritySignature, apiKey }
  * Errors:       400 invalid input · 409 unavailable/unknown products · 503 not configured
@@ -15,11 +18,13 @@
 
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
+import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature } from '../../lib/bold';
 
 const MAX_ITEMS = 50;
 const MAX_QUANTITY = 10;
 const MAX_DESCRIPTION_LENGTH = 100;
+const MIN_AMOUNT_COP = 1000; // Bold's minimum charge
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function json(body: unknown, status = 200): Response {
@@ -31,9 +36,10 @@ function json(body: unknown, status = 200): Response {
 
 export const POST: APIRoute = async ({ request }) => {
   const bold = getBoldConfig();
+  const supabaseAdmin = getSupabaseAdmin();
 
-  if (!bold || !supabase) {
-    console.error('bold-signature: Bold keys or Supabase client not configured');
+  if (!bold || !supabase || !supabaseAdmin) {
+    console.error('bold-signature: Bold keys, Supabase client or service role key not configured');
     return json({ error: 'Payments unavailable' }, 503);
   }
 
@@ -99,8 +105,8 @@ export const POST: APIRoute = async ({ request }) => {
   const amount = Math.round(
     products!.reduce((sum, p) => sum + p.price! * quantities.get(p.id)!, 0)
   );
-  if (amount <= 0) {
-    return json({ error: 'Invalid amount' }, 400);
+  if (amount < MIN_AMOUNT_COP) {
+    return json({ error: 'Amount below Bold minimum' }, 400);
   }
 
   const orderId = `PNT-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
@@ -112,7 +118,25 @@ export const POST: APIRoute = async ({ request }) => {
     description = `${description.slice(0, MAX_DESCRIPTION_LENGTH - 1)}…`;
   }
 
-  // ---- 4. Sign: SHA-256("{orderId}{amount}{currency}{secretKey}") ----
+  // ---- 4. Save the pending order (prices as charged, for the webhook) ----
+  const { error: orderError } = await supabaseAdmin.from('orders').insert({
+    id: orderId,
+    amount,
+    currency,
+    description,
+    items: products!.map(p => ({
+      id: p.id,
+      title: p.title,
+      quantity: quantities.get(p.id)!,
+      price: p.price,
+    })),
+  });
+  if (orderError) {
+    console.error('bold-signature: could not save order', orderError.message);
+    return json({ error: 'Could not create order' }, 500);
+  }
+
+  // ---- 5. Sign: SHA-256("{orderId}{amount}{currency}{secretKey}") ----
   const integritySignature = await computeIntegritySignature(orderId, amount, currency, bold.secretKey);
 
   return json({

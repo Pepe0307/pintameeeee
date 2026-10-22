@@ -83,6 +83,7 @@ import { SITE_CONFIG } from '../utils/config';
 
 <script>
   import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal } from '../utils/cart';
+  import { mountBoldButton } from '../utils/bold-client';
 
   const WHATSAPP_NUMBER = '+573203743938';
 
@@ -221,7 +222,7 @@ import { SITE_CONFIG } from '../utils/config';
   let boldRequestId = 0;
 
   /**
-   * Fetch the Bold integrity signature from the server and inject the payment button.
+   * Show the Bold payment button for the current cart.
    *
    * SECURITY: only product IDs and quantities are sent. The server looks up the
    * real prices in Supabase and computes the amount, so localStorage prices are
@@ -232,49 +233,19 @@ import { SITE_CONFIG } from '../utils/config';
     if (!container || total <= 0) return;
 
     const requestId = ++boldRequestId;
+    const result = await mountBoldButton(
+      container,
+      cart.map(item => ({ id: item.id, quantity: item.quantity })),
+      () => requestId === boldRequestId,
+    );
 
-    try {
-      const res = await fetch('/api/bold-signature', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
-        }),
-      });
-
-      // A newer request was started (e.g. quantity changed) — drop this one
-      if (requestId !== boldRequestId) return;
-
-      if (!res.ok) {
-        container.innerHTML = '';
-        if (res.status === 409) {
-          const msg = document.createElement('p');
-          msg.className = 'text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg';
-          msg.textContent = 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.';
-          container.appendChild(msg);
-        }
-        return;
-      }
-
-      const data = await res.json();
-      if (requestId !== boldRequestId) return;
-
-      // Clear previous button and inject new one
-      container.innerHTML = '';
-      const script = document.createElement('script');
-      script.src = 'https://checkout.bold.co/library/boldPaymentButton.js';
-      script.setAttribute('data-bold-button', '');
-      script.setAttribute('data-api-key', data.apiKey);
-      script.setAttribute('data-amount', data.amount.toString());
-      script.setAttribute('data-currency', data.currency);
-      script.setAttribute('data-description', data.description);
-      script.setAttribute('data-order-id', data.orderId);
-      script.setAttribute('data-integrity-signature', data.integritySignature);
-      container.appendChild(script);
-    } catch {
-      // Silently fail — WhatsApp remains as fallback
-      container.innerHTML = '';
+    if (result === 'unavailable') {
+      const msg = document.createElement('p');
+      msg.className = 'text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg';
+      msg.textContent = 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.';
+      container.appendChild(msg);
     }
+    // On 'error' the container stays empty — WhatsApp remains as fallback
   }
 
   function setupCart() {

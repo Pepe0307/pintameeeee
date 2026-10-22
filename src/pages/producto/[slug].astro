@@ -110,12 +110,7 @@ const canPayWithBold = typeof price === 'number' && price > 0 && (currency || 'C
               <!-- Bold + WhatsApp on same row -->
               <div class="flex flex-row items-stretch gap-3">
                 {canPayWithBold && (
-                  <BoldPayButton
-                    productTitle={title || 'Producto'}
-                    productPrice={price!}
-                    currency="COP"
-                    productId={product.id}
-                  />
+                  <BoldPayButton productId={product.id} />
                 )}
                 <WhatsAppButton 
                   productTitle={title}

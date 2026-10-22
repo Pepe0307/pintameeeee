@@ -17,6 +17,11 @@ export default defineConfig({
       // Bold secret key for the integrity hash. Read at RUNTIME from the
       // environment (Cloudflare secret / local .env), never inlined in the build.
       BOLD_SECRET_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Bold signs test-mode webhooks with an EMPTY key. Only set to "true" in
+      // local/preview environments that use Bold test keys — never in production.
+      BOLD_TEST_MODE: envField.boolean({ context: 'server', access: 'secret', default: false }),
+      // Supabase service role key: bypasses RLS. Server-only, used for orders.
+      SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
   integrations: [sitemap()],

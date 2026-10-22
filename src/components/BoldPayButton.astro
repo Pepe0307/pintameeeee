@@ -2,68 +2,41 @@
 /**
  * BoldPayButton.astro
  *
- * Renders the Bold payment button for online checkout.
- * Computes the integrity-signature (SHA256) server-side using the secret key.
- * Uses Bold's official combined approach: src + data attributes on the same script tag.
+ * Bold payment button for a single product.
  *
- * Keys are read at runtime via src/lib/bold.ts (astro:env), so the secret is
- * never inlined into the build output or sent to the browser.
+ * The button is loaded in the browser: it asks /api/bold-signature for a signed
+ * order (priced on the server from Supabase and saved as 'pending'), then
+ * injects Bold's script. Signing in the browser instead of at render time
+ * means crawlers and plain page views don't create orders.
  *
- * Hash format: SHA256("{orderId}{amount}{currency}{secretKey}")
- * Example: SHA256("inv033439400COPkgfq2nN0o52XqnuXZWIN2F")
+ * If payments aren't configured or the product can't be paid online, the
+ * container stays empty and WhatsApp remains as the way to buy.
  *
  * Docs: https://developers.bold.co/pagos-en-linea/boton-de-pagos/integracion-manual
  */
 
-import { getBoldConfig, computeIntegritySignature } from '../lib/bold';
-
 interface Props {
-  /** Product title shown in checkout */
-  productTitle: string;
-  /** Amount in COP (pesos), e.g. 50000 for $50,000 COP */
-  productPrice: number;
-  /** ISO currency code, defaults to COP */
-  currency?: string;
-  /** Product identifier (used as base for unique order ID) */
+  /** Product UUID */
   productId: string;
 }
 
-const {
-  productTitle,
-  productPrice,
-  currency = 'COP',
-  productId,
-} = Astro.props;
-
-const bold = getBoldConfig();
-
-// Amount for Bold is in pesos (integer, no decimals for COP)
-const amount = Math.round(productPrice);
-
-// Generate a unique order ID per page render (product + timestamp)
-const orderId = `${productId.slice(0, 8)}-${Date.now()}`;
-
-const integritySignature = bold
-  ? await computeIntegritySignature(orderId, amount, currency, bold.secretKey)
-  : '';
+const { productId } = Astro.props;
 ---
 
-{bold ? (
-  <div class="bold-pay-container">
-    <script
-      is:inline
-      src="https://checkout.bold.co/library/boldPaymentButton.js"
-      data-bold-button
-      data-api-key={bold.apiKey}
-      data-amount={amount.toString()}
-      data-currency={currency}
-      data-description={productTitle}
-      data-order-id={orderId}
-      data-integrity-signature={integritySignature}
-    ></script>
-  </div>
-) : (
-  <p class="text-sm text-amber-600 bg-amber-50 px-4 py-2 rounded-lg">
-    ⚠️ Falta configurar <code>PUBLIC_BOLD_API_KEY</code> / <code>BOLD_SECRET_KEY</code> en las variables de entorno.
-  </p>
-)}
+<div class="bold-pay-container" data-bold-product={productId}></div>
+
+<script>
+  import { mountBoldButton } from '../utils/bold-client';
+
+  function setupBoldButtons() {
+    document.querySelectorAll<HTMLElement>('[data-bold-product]').forEach(el => {
+      // Avoid double-mounting
+      if (el.dataset.bound) return;
+      el.dataset.bound = 'true';
+      mountBoldButton(el, [{ id: el.dataset.boldProduct!, quantity: 1 }]);
+    });
+  }
+
+  setupBoldButtons();
+  document.addEventListener('astro:after-swap', setupBoldButtons);
+</script>
