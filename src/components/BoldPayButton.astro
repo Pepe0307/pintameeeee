@@ -2,41 +2,109 @@
 /**
  * BoldPayButton.astro
  *
- * Bold payment button for a single product.
+ * "Pagar en línea" button that opens Bold's checkout.
  *
- * The button is loaded in the browser: it asks /api/bold-signature for a signed
- * order (priced on the server from Supabase and saved as 'pending'), then
- * injects Bold's script. Signing in the browser instead of at render time
- * means crawlers and plain page views don't create orders.
+ * - With `productId`: pays for that single product (product page).
+ * - Without it: pays for the current localStorage cart (cart page).
  *
- * If payments aren't configured or the product can't be paid online, the
- * container stays empty and WhatsApp remains as the way to buy.
+ * The order is created only when the button is clicked (see utils/bold-client.ts),
+ * so page views and crawlers don't create orders. Prices always come from
+ * Supabase on the server, never from the browser.
  *
- * Docs: https://developers.bold.co/pagos-en-linea/boton-de-pagos/integracion-manual
+ * Renders nothing if Bold or the Supabase service key isn't configured, so
+ * WhatsApp remains the way to buy.
  */
 
+import { getBoldConfig } from '../lib/bold';
+import { getSupabaseAdmin } from '../lib/supabase-admin';
+
 interface Props {
-  /** Product UUID */
-  productId: string;
+  /** Product UUID. Omit to pay for the cart. */
+  productId?: string;
 }
 
 const { productId } = Astro.props;
+const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
 ---
 
-<div class="bold-pay-container" data-bold-product={productId}></div>
+{enabled && (
+  <div class="flex-1 flex flex-col gap-2" data-bold-pay data-product-id={productId ?? ''}>
+    <button
+      type="button"
+      class="w-full h-full px-6 py-3 rounded-lg bg-gallery-charcoal text-white font-medium inline-flex items-center justify-center gap-2 hover:bg-black transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+      data-bold-pay-button
+    >
+      <!-- Credit card icon -->
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <path d="M2 10h20" />
+      </svg>
+      <span data-bold-pay-label>Pagar en línea</span>
+    </button>
+    <p class="hidden text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg" data-bold-pay-message role="alert"></p>
+  </div>
+)}
 
 <script>
-  import { mountBoldButton } from '../utils/bold-client';
+  import { loadBoldLibrary, startBoldCheckout } from '../utils/bold-client';
+  import { getCart } from '../utils/cart';
 
-  function setupBoldButtons() {
-    document.querySelectorAll<HTMLElement>('[data-bold-product]').forEach(el => {
-      // Avoid double-mounting
-      if (el.dataset.bound) return;
-      el.dataset.bound = 'true';
-      mountBoldButton(el, [{ id: el.dataset.boldProduct!, quantity: 1 }]);
+  const LABEL = 'Pagar en línea';
+  const MESSAGES = {
+    productUnavailable: 'Esta pieza ya no está disponible.',
+    cartUnavailable: 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.',
+    error: 'No pudimos iniciar el pago. Intenta de nuevo o escríbenos por WhatsApp.',
+  };
+
+  function setupBoldPayButtons() {
+    const wrappers = document.querySelectorAll<HTMLElement>('[data-bold-pay]');
+    if (wrappers.length === 0) return;
+
+    // Preload Bold's library so the click feels instant (creates no order)
+    loadBoldLibrary().catch(() => {});
+
+    wrappers.forEach(wrapper => {
+      // Avoid double-binding
+      if (wrapper.dataset.bound) return;
+      wrapper.dataset.bound = 'true';
+
+      const button = wrapper.querySelector<HTMLButtonElement>('[data-bold-pay-button]')!;
+      const label = wrapper.querySelector<HTMLElement>('[data-bold-pay-label]')!;
+      const message = wrapper.querySelector<HTMLElement>('[data-bold-pay-message]')!;
+      const productId = wrapper.dataset.productId;
+
+      button.addEventListener('click', async () => {
+        const items = productId
+          ? [{ id: productId, quantity: 1 }]
+          : getCart().map(item => ({ id: item.id, quantity: item.quantity }));
+        if (items.length === 0) return;
+
+        button.disabled = true;
+        label.textContent = 'Preparando pago…';
+        message.classList.add('hidden');
+
+        const result = await startBoldCheckout(items);
+
+        if (result === 'opened') {
+          label.textContent = 'Abriendo Bold…';
+          // Re-enable in case the customer closes the checkout and stays here
+          setTimeout(() => {
+            button.disabled = false;
+            label.textContent = LABEL;
+          }, 4000);
+          return;
+        }
+
+        button.disabled = false;
+        label.textContent = LABEL;
+        message.textContent = result === 'unavailable'
+          ? (productId ? MESSAGES.productUnavailable : MESSAGES.cartUnavailable)
+          : MESSAGES.error;
+        message.classList.remove('hidden');
+      });
     });
   }
 
-  setupBoldButtons();
-  document.addEventListener('astro:after-swap', setupBoldButtons);
+  setupBoldPayButtons();
+  document.addEventListener('astro:after-swap', setupBoldPayButtons);
 </script>

@@ -1,57 +1,90 @@
 /**
- * Client-side helper to show the Bold payment button.
+ * Client-side helpers for Bold's custom checkout button.
  *
- * Asks /api/bold-signature for a signed order (the server prices it from
- * Supabase and saves it as 'pending'), then injects Bold's script.
- * Used by the product page (BoldPayButton) and the cart page.
+ * Bold's library is loaded when the page loads (this creates nothing). The
+ * order is only created when the customer clicks "Pagar": we ask
+ * /api/bold-signature for a signed order (priced on the server from Supabase
+ * and saved as 'pending'), then open Bold's checkout with `BoldCheckout`.
+ *
+ * Docs: https://developers.bold.co/pagos-en-linea/boton-de-pagos/integracion-manual/integracion-personalizada
  */
 
 const BOLD_SCRIPT_URL = 'https://checkout.bold.co/library/boldPaymentButton.js';
 const CONFIRMATION_PATH = '/pedido/confirmacion';
 
-export type BoldMountResult = 'ok' | 'unavailable' | 'error' | 'stale';
+interface BoldCheckoutInstance {
+  open(): void;
+}
 
-export async function mountBoldButton(
-  container: HTMLElement,
+declare global {
+  interface Window {
+    BoldCheckout?: new (config: Record<string, string>) => BoldCheckoutInstance;
+  }
+}
+
+let libraryPromise: Promise<void> | null = null;
+
+/** Loads Bold's checkout library once. Safe to call many times. */
+export function loadBoldLibrary(): Promise<void> {
+  if (window.BoldCheckout) return Promise.resolve();
+  if (!libraryPromise) {
+    libraryPromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = BOLD_SCRIPT_URL;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        // Allow a retry on the next click (e.g. flaky network)
+        libraryPromise = null;
+        script.remove();
+        reject(new Error('Could not load Bold checkout'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+  return libraryPromise;
+}
+
+export type BoldCheckoutResult = 'opened' | 'unavailable' | 'error';
+
+/**
+ * Creates the order on the server and opens Bold's checkout.
+ * Call this from a click handler.
+ */
+export async function startBoldCheckout(
   items: { id: string; quantity: number }[],
-  isCurrent: () => boolean = () => true,
-): Promise<BoldMountResult> {
+): Promise<BoldCheckoutResult> {
   try {
+    // Load the library first, so an ad blocker doesn't leave an orphan order
+    await loadBoldLibrary();
+    if (!window.BoldCheckout) return 'error';
+
     const res = await fetch('/api/bold-signature', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items }),
     });
-
-    // A newer request was started (e.g. quantity changed) — drop this one
-    if (!isCurrent()) return 'stale';
-
     if (!res.ok) {
-      container.innerHTML = '';
       return res.status === 409 ? 'unavailable' : 'error';
     }
-
     const data = await res.json();
-    if (!isCurrent()) return 'stale';
 
-    container.innerHTML = '';
-    const script = document.createElement('script');
-    script.src = BOLD_SCRIPT_URL;
-    script.setAttribute('data-bold-button', '');
-    script.setAttribute('data-api-key', data.apiKey);
-    script.setAttribute('data-amount', String(data.amount));
-    script.setAttribute('data-currency', data.currency);
-    script.setAttribute('data-description', data.description);
-    script.setAttribute('data-order-id', data.orderId);
-    script.setAttribute('data-integrity-signature', data.integritySignature);
+    const config: Record<string, string> = {
+      orderId: data.orderId,
+      currency: data.currency,
+      amount: String(data.amount),
+      apiKey: data.apiKey,
+      integritySignature: data.integritySignature,
+      description: data.description,
+    };
     // Bold only accepts HTTPS redirection URLs (so not on http://localhost)
     if (location.protocol === 'https:') {
-      script.setAttribute('data-redirection-url', `${location.origin}${CONFIRMATION_PATH}`);
+      config.redirectionUrl = `${location.origin}${CONFIRMATION_PATH}`;
     }
-    container.appendChild(script);
-    return 'ok';
+
+    new window.BoldCheckout(config).open();
+    return 'opened';
   } catch {
-    if (isCurrent()) container.innerHTML = '';
     return 'error';
   }
 }

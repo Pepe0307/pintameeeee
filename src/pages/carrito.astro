@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatPrice } from '../utils/formatters';
 import { SITE_CONFIG } from '../utils/config';
+import BoldPayButton from '../components/BoldPayButton.astro';
 ---
 
 <BaseLayout title="Carrito de compras" description="Tu carrito de compras en Pintame">
@@ -66,8 +67,8 @@ import { SITE_CONFIG } from '../utils/config';
             Comprar por WhatsApp
           </a>
 
-          <!-- Bold payment button (injected dynamically) -->
-          <div id="bold-cart-container"></div>
+          <!-- Bold: the order is created only when this is clicked -->
+          <BoldPayButton />
         </div>
       </div>
 
@@ -83,7 +84,6 @@ import { SITE_CONFIG } from '../utils/config';
 
 <script>
   import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal } from '../utils/cart';
-  import { mountBoldButton } from '../utils/bold-client';
 
   const WHATSAPP_NUMBER = '+573203743938';
 
@@ -121,10 +121,6 @@ import { SITE_CONFIG } from '../utils/config';
       itemsEl.classList.add('hidden');
       summaryEl.classList.add('hidden');
       continueEl.classList.add('hidden');
-      // Clear Bold button when cart is empty (and cancel any in-flight request)
-      boldRequestId++;
-      const boldContainer = document.getElementById('bold-cart-container');
-      if (boldContainer) boldContainer.innerHTML = '';
       return;
     }
 
@@ -191,9 +187,6 @@ import { SITE_CONFIG } from '../utils/config';
       whatsappBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     }
 
-    // Load Bold payment button for the cart total
-    loadBoldButton(total, cart);
-
     // Attach event listeners
     itemsEl.querySelectorAll('.cart-qty-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -216,36 +209,6 @@ import { SITE_CONFIG } from '../utils/config';
         renderCart();
       });
     });
-  }
-
-  // Incremented on every request so out-of-order responses are ignored
-  let boldRequestId = 0;
-
-  /**
-   * Show the Bold payment button for the current cart.
-   *
-   * SECURITY: only product IDs and quantities are sent. The server looks up the
-   * real prices in Supabase and computes the amount, so localStorage prices are
-   * never trusted for payment.
-   */
-  async function loadBoldButton(total: number, cart: { id: string; quantity: number }[]) {
-    const container = document.getElementById('bold-cart-container');
-    if (!container || total <= 0) return;
-
-    const requestId = ++boldRequestId;
-    const result = await mountBoldButton(
-      container,
-      cart.map(item => ({ id: item.id, quantity: item.quantity })),
-      () => requestId === boldRequestId,
-    );
-
-    if (result === 'unavailable') {
-      const msg = document.createElement('p');
-      msg.className = 'text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg';
-      msg.textContent = 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.';
-      container.appendChild(msg);
-    }
-    // On 'error' the container stays empty — WhatsApp remains as fallback
   }
 
   function setupCart() {
