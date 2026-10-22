@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import type { Database } from './database.types';
 import type { AstroCookies } from 'astro';
+import { isSecretSupabaseKey, SECRET_KEY_ERROR } from './supabase-keys';
 
 export const createSupabaseServerClient = (cookies: AstroCookies) => {
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -8,6 +9,10 @@ export const createSupabaseServerClient = (cookies: AstroCookies) => {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase environment variables are missing.');
+  }
+  // Never use a secret key as the public key: it would bypass RLS everywhere
+  if (isSecretSupabaseKey(supabaseAnonKey)) {
+    throw new Error(SECRET_KEY_ERROR);
   }
 
   return createServerClient<Database>(
