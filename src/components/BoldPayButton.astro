@@ -2,7 +2,8 @@
 /**
  * BoldPayButton.astro
  *
- * "Pagar en línea" button that opens Bold's checkout.
+ * "Pagar con Bold" button that opens Bold's checkout, styled like Bold's
+ * official button.
  *
  * - With `productId`: pays for that single product (product page).
  * - Without it: pays for the current localStorage cart (cart page).
@@ -29,27 +30,49 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
 
 {enabled && (
   <div class="flex-1 flex flex-col gap-2" data-bold-pay data-product-id={productId ?? ''}>
-    <button
-      type="button"
-      class="w-full h-full px-6 py-3 rounded-lg bg-gallery-charcoal text-white font-medium inline-flex items-center justify-center gap-2 hover:bg-black transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait"
-      data-bold-pay-button
-    >
-      <!-- Credit card icon -->
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="2" y="5" width="20" height="14" rx="2" />
-        <path d="M2 10h20" />
-      </svg>
-      <span data-bold-pay-label>Pagar en línea</span>
+    <!-- Same look as Bold's official "Pagar con Bold" button (dark, size L) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" />
+    <button type="button" class="bold-pay-button" data-bold-pay-button>
+      <span data-bold-pay-label>Pagar con</span>
+      <svg class="bold-pay-logo" width="59" height="20" viewBox="0 0 59 20" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bold" data-bold-pay-logo><path d="M18.0741 13.5664H32.349C32.0058 17.1701 28.9365 19.9994 25.2109 19.9994C21.4854 19.9994 18.4167 17.1701 18.0735 13.5664H18.0741ZM7.88967 5.8245V19.9674C11.5252 19.6273 14.3817 16.5859 14.3817 12.8957C14.3817 9.20543 11.5252 6.1652 7.88967 5.82509V5.8245ZM25.2115 5.7925C21.4866 5.7925 18.4173 8.62298 18.0741 12.2267H32.349C32.0058 8.62298 28.9365 5.7925 25.2109 5.7925H25.2115ZM0.679688 10.9546V20H6.49433V0H0.679688V10.9546ZM52.5057 0V19.9994H58.3203V0H52.5057ZM44.6599 12.8962C44.6599 13.3454 44.7041 13.7838 44.785 14.2099C45.3688 17.2851 47.9588 19.6682 51.1526 19.9668V5.8245C47.5171 6.1646 44.6605 9.20602 44.6605 12.8962H44.6599ZM35.2896 19.9994H41.1042V0H35.2896V19.9994Z" fill="white"/></svg>
     </button>
     <p class="hidden text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg" data-bold-pay-message role="alert"></p>
   </div>
 )}
 
+<style>
+  /* Mirrors Bold's own button styles (checkout.bold.co/library/boldPaymentButton.js) */
+  .bold-pay-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 32px;
+    color: #fff;
+    background: linear-gradient(270deg, #ff2947 13.86%, #121e6c 83.33%);
+    font-family: Montserrat, sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.2s, opacity 0.2s;
+  }
+  .bold-pay-button:hover { filter: brightness(1.08); }
+  .bold-pay-button:focus-visible { outline: 3px solid #121e6c; outline-offset: 2px; }
+  .bold-pay-button:disabled { opacity: 0.7; cursor: wait; }
+  .bold-pay-logo { width: 59px; height: 20px; flex-shrink: 0; }
+</style>
+
 <script>
   import { loadBoldLibrary, startBoldCheckout } from '../utils/bold-client';
   import { getCart } from '../utils/cart';
 
-  const LABEL = 'Pagar en línea';
+  const LABEL = 'Pagar con';
   const MESSAGES = {
     productUnavailable: 'Esta pieza ya no está disponible.',
     cartUnavailable: 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.',
@@ -70,6 +93,12 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
 
       const button = wrapper.querySelector<HTMLButtonElement>('[data-bold-pay-button]')!;
       const label = wrapper.querySelector<HTMLElement>('[data-bold-pay-label]')!;
+      const logo = wrapper.querySelector<SVGElement>('[data-bold-pay-logo]')!;
+      const setIdle = () => {
+        button.disabled = false;
+        label.textContent = LABEL;
+        logo.style.display = '';
+      };
       const message = wrapper.querySelector<HTMLElement>('[data-bold-pay-message]')!;
       const productId = wrapper.dataset.productId;
 
@@ -81,6 +110,7 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
 
         button.disabled = true;
         label.textContent = 'Preparando pago…';
+        logo.style.display = 'none';
         message.classList.add('hidden');
 
         const result = await startBoldCheckout(items);
@@ -88,15 +118,11 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
         if (result === 'opened') {
           label.textContent = 'Abriendo Bold…';
           // Re-enable in case the customer closes the checkout and stays here
-          setTimeout(() => {
-            button.disabled = false;
-            label.textContent = LABEL;
-          }, 4000);
+          setTimeout(setIdle, 4000);
           return;
         }
 
-        button.disabled = false;
-        label.textContent = LABEL;
+        setIdle();
         message.textContent = result === 'unavailable'
           ? (productId ? MESSAGES.productUnavailable : MESSAGES.cartUnavailable)
           : MESSAGES.error;
