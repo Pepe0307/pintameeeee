@@ -1,0 +1,48 @@
+---
+/**
+ * CartIcon.astro
+ * 
+ * Cart icon with a badge showing the number of items.
+ * The badge updates reactively via the 'cart-updated' custom event.
+ */
+---
+
+<a href="/carrito" class="relative p-2 text-gallery-charcoal hover:text-gallery-newpink transition-colors" aria-label="Ver carrito">
+  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M6 2a1 1 0 0 1 .993 .883l.007 .117v1.068l13.071 .935a1 1 0 0 1 .929 1.024l-.01 .114l-1 7a1 1 0 0 1 -.877 .853l-.113 .006h-12v2h10a3 3 0 1 1 -2.995 3.176l-.005 -.176l.005 -.176c.017 -.288 .074 -.564 .166 -.824h-5.342a3 3 0 1 1 -5.824 1.176l-.005 -.176l.005 -.176a3.002 3.002 0 0 1 1.995 -2.654v-12.17h-1a1 1 0 0 1 -.993 -.883l-.007 -.117a1 1 0 0 1 .883 -.993l.117 -.007h2zm0 16a1 1 0 1 0 0 2a1 1 0 0 0 0 -2m11 0a1 1 0 1 0 0 2a1 1 0 0 0 0 -2" />
+  </svg>
+  <span 
+    id="cart-badge"
+    class="absolute -top-1 -right-1 bg-gallery-newpink text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center transition-transform scale-0"
+  >
+    0
+  </span>
+</a>
+
+<script>
+  import { getCartCount } from '../utils/cart';
+
+  function updateCartBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    const count = getCartCount();
+    badge.textContent = count.toString();
+    if (count > 0) {
+      badge.classList.remove('scale-0');
+      badge.classList.add('scale-100');
+    } else {
+      badge.classList.remove('scale-100');
+      badge.classList.add('scale-0');
+    }
+  }
+
+  // Update on load
+  updateCartBadge();
+
+  // Update when cart changes (from AddToCartButton or cart page)
+  window.addEventListener('cart-updated', updateCartBadge);
+
+  // Update on View Transitions
+  document.addEventListener('astro:after-swap', updateCartBadge);
+</script>

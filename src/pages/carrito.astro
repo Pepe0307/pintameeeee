@@ -1,0 +1,292 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatPrice } from '../utils/formatters';
+import { SITE_CONFIG } from '../utils/config';
+---
+
+<BaseLayout title="Carrito de compras" description="Tu carrito de compras en Pintame">
+  <section class="py-16 px-4">
+    <div class="container mx-auto max-w-4xl">
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <ol class="flex items-center gap-2 text-sm text-gray-500">
+          <li><a href="/" class="hover:text-gallery-newpink">Inicio</a></li>
+          <li>/</li>
+          <li class="text-gallery-charcoal">Carrito</li>
+        </ol>
+      </nav>
+
+      <h1 class="font-display text-4xl md:text-5xl font-bold text-gallery-charcoal mb-8">
+        Tu Carrito 🎨
+      </h1>
+
+      <!-- Empty cart message (shown by JS when cart is empty) -->
+      <div id="cart-empty" class="hidden text-center py-16">
+        <svg class="w-24 h-24 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+        </svg>
+        <p class="text-xl text-gray-500 mb-4">Tu carrito está vacío</p>
+        <a href="/catalogo" class="btn-primary inline-block">
+          Explorar Catálogo
+        </a>
+      </div>
+
+      <!-- Cart items (populated by JS) -->
+      <div id="cart-items" class="hidden space-y-4">
+        <!-- Items are rendered here by JavaScript -->
+      </div>
+
+      <!-- Cart summary -->
+      <div id="cart-summary" class="hidden mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex justify-between items-center mb-6">
+          <span class="text-lg font-medium text-gallery-charcoal">Total</span>
+          <span id="cart-total" class="text-2xl font-bold text-gallery-newpink"></span>
+        </div>
+
+        <!-- Vaciar + WhatsApp + Bold side by side -->
+        <div class="flex flex-col sm:flex-row sm:justify-evenly items-stretch gap-3">
+          <button 
+            id="cart-clear-btn"
+            class="px-6 py-3 text-base border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-center"
+          >
+            Vaciar carrito
+          </button>
+
+          <!-- WhatsApp: send full cart -->
+          <a 
+            id="cart-whatsapp-btn"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-whatsapp px-6 py-3 text-base flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            Comprar por WhatsApp
+          </a>
+
+          <!-- Bold payment button (injected dynamically) -->
+          <div id="bold-cart-container"></div>
+        </div>
+      </div>
+
+      <!-- Continue shopping -->
+      <div id="cart-continue" class="hidden mt-6 text-center">
+        <a href="/catalogo" class="text-gallery-newpink hover:underline font-medium">
+          ← Seguir comprando
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal } from '../utils/cart';
+
+  const WHATSAPP_NUMBER = '+573203743938';
+
+  function formatPriceCOP(price: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  }
+
+  function escapeHtml(value: unknown): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderCart() {
+    const cart = getCart();
+    const emptyEl = document.getElementById('cart-empty');
+    const itemsEl = document.getElementById('cart-items');
+    const summaryEl = document.getElementById('cart-summary');
+    const continueEl = document.getElementById('cart-continue');
+    const totalEl = document.getElementById('cart-total');
+    const whatsappBtn = document.getElementById('cart-whatsapp-btn') as HTMLAnchorElement;
+
+    if (!emptyEl || !itemsEl || !summaryEl || !continueEl) return;
+
+    if (cart.length === 0) {
+      emptyEl.classList.remove('hidden');
+      itemsEl.classList.add('hidden');
+      summaryEl.classList.add('hidden');
+      continueEl.classList.add('hidden');
+      // Clear Bold button when cart is empty (and cancel any in-flight request)
+      boldRequestId++;
+      const boldContainer = document.getElementById('bold-cart-container');
+      if (boldContainer) boldContainer.innerHTML = '';
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+    itemsEl.classList.remove('hidden');
+    summaryEl.classList.remove('hidden');
+    continueEl.classList.remove('hidden');
+
+    // Render items
+    itemsEl.innerHTML = cart.map(item => {
+      // Cart data comes from localStorage, so escape everything interpolated into HTML
+      const id = escapeHtml(item.id);
+      const href = `/producto/${encodeURIComponent(item.id)}`;
+      return `
+      <div class="flex gap-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 items-center" data-cart-item="${id}">
+        <a href="${href}" class="shrink-0">
+          <img 
+            src="${escapeHtml(item.imageUrl)}" 
+            alt="${escapeHtml(item.title)}" 
+            class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl"
+            width="96"
+            height="96"
+          />
+        </a>
+        <div class="flex-1 min-w-0">
+          <a href="${href}" class="font-display font-bold text-gallery-charcoal hover:text-gallery-newpink transition-colors line-clamp-1">
+            ${escapeHtml(item.title)}
+          </a>
+          <p class="text-gallery-newpink font-bold mt-1">
+            ${formatPriceCOP(item.price)}
+          </p>
+          <div class="flex items-center gap-2 mt-2">
+            <button class="cart-qty-btn w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer" data-action="decrease" data-id="${id}">−</button>
+            <span class="w-8 text-center font-medium">${escapeHtml(item.quantity)}</span>
+            <button class="cart-qty-btn w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer" data-action="increase" data-id="${id}">+</button>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-bold text-gallery-charcoal">
+            ${formatPriceCOP(item.price * item.quantity)}
+          </p>
+          <button class="cart-remove-btn mt-2 text-sm text-red-400 hover:text-red-600 transition-colors cursor-pointer" data-id="${id}">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    `;
+    }).join('');
+
+    // Total
+    const total = getCartTotal();
+    if (totalEl) {
+      totalEl.textContent = formatPriceCOP(total);
+    }
+
+    // WhatsApp link with full cart details
+    if (whatsappBtn) {
+      const lines = cart.map(item => 
+        `• ${item.title} (x${item.quantity}) - ${formatPriceCOP(item.price * item.quantity)}`
+      );
+      const message = encodeURIComponent(
+        `¡Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\nTotal: ${formatPriceCOP(total)}`
+      );
+      whatsappBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+    }
+
+    // Load Bold payment button for the cart total
+    loadBoldButton(total, cart);
+
+    // Attach event listeners
+    itemsEl.querySelectorAll('.cart-qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        const id = el.dataset.id!;
+        const item = cart.find(i => i.id === id);
+        if (!item) return;
+        if (el.dataset.action === 'increase') {
+          updateQuantity(id, item.quantity + 1);
+        } else {
+          updateQuantity(id, item.quantity - 1);
+        }
+        renderCart();
+      });
+    });
+
+    itemsEl.querySelectorAll('.cart-remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        removeFromCart((btn as HTMLElement).dataset.id!);
+        renderCart();
+      });
+    });
+  }
+
+  // Incremented on every request so out-of-order responses are ignored
+  let boldRequestId = 0;
+
+  /**
+   * Fetch the Bold integrity signature from the server and inject the payment button.
+   *
+   * SECURITY: only product IDs and quantities are sent. The server looks up the
+   * real prices in Supabase and computes the amount, so localStorage prices are
+   * never trusted for payment.
+   */
+  async function loadBoldButton(total: number, cart: { id: string; quantity: number }[]) {
+    const container = document.getElementById('bold-cart-container');
+    if (!container || total <= 0) return;
+
+    const requestId = ++boldRequestId;
+
+    try {
+      const res = await fetch('/api/bold-signature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+        }),
+      });
+
+      // A newer request was started (e.g. quantity changed) — drop this one
+      if (requestId !== boldRequestId) return;
+
+      if (!res.ok) {
+        container.innerHTML = '';
+        if (res.status === 409) {
+          const msg = document.createElement('p');
+          msg.className = 'text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg';
+          msg.textContent = 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.';
+          container.appendChild(msg);
+        }
+        return;
+      }
+
+      const data = await res.json();
+      if (requestId !== boldRequestId) return;
+
+      // Clear previous button and inject new one
+      container.innerHTML = '';
+      const script = document.createElement('script');
+      script.src = 'https://checkout.bold.co/library/boldPaymentButton.js';
+      script.setAttribute('data-bold-button', '');
+      script.setAttribute('data-api-key', data.apiKey);
+      script.setAttribute('data-amount', data.amount.toString());
+      script.setAttribute('data-currency', data.currency);
+      script.setAttribute('data-description', data.description);
+      script.setAttribute('data-order-id', data.orderId);
+      script.setAttribute('data-integrity-signature', data.integritySignature);
+      container.appendChild(script);
+    } catch {
+      // Silently fail — WhatsApp remains as fallback
+      container.innerHTML = '';
+    }
+  }
+
+  function setupCart() {
+    renderCart();
+
+    // Clear cart button
+    document.getElementById('cart-clear-btn')?.addEventListener('click', () => {
+      clearCart();
+      renderCart();
+    });
+  }
+
+  setupCart();
+  document.addEventListener('astro:after-swap', setupCart);
+</script>

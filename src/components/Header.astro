@@ -1,5 +1,6 @@
 ---
 import { SITE_CONFIG } from '../utils/config';
+import CartIcon from './CartIcon.astro';
 
 const navLinks = [
   { href: '/', label: 'Inicio' },
@@ -27,30 +28,35 @@ const navLinks = [
         </span>
       </a>
       
-      <!-- Desktop Navigation -->
-      <ul class="hidden md:flex items-center gap-8">
-        {navLinks.map(link => (
-          <li>
-            <a 
-              href={link.href} 
-              class="text-gallery-charcoal hover:text-gallery-newpink transition-colors font-medium"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      
-      <!-- Mobile Menu Button -->
-      <button 
-        id="menu-toggle"
-        class="md:hidden p-2 text-gallery-charcoal"
-        aria-label="Alternar menú"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      <!-- Right side: Nav + Cart + Mobile Menu -->
+      <div class="flex items-center gap-8">
+        <!-- Desktop Navigation -->
+        <ul class="hidden md:flex items-center gap-8">
+          {navLinks.map(link => (
+            <li>
+              <a 
+                href={link.href} 
+                class="text-gallery-charcoal hover:text-gallery-newpink transition-colors font-medium"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        
+        <CartIcon />
+        
+        <!-- Mobile Menu Button -->
+        <button 
+          id="menu-toggle"
+          class="md:hidden p-2 text-gallery-charcoal"
+          aria-label="Alternar menú"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
     </div>
     
     <!-- Mobile Navigation -->
