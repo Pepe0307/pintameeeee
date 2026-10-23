@@ -107,6 +107,8 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Events from other Bold channels (POS, payment links…) are not ours
   if (!reference.startsWith(ORDER_PREFIX)) {
+    // Field names only (no personal data), to spot a reference Bold sends elsewhere
+    console.warn(`bold-webhook: ignored ${event.type} reference=${JSON.stringify(reference)} data keys=${Object.keys(event.data ?? {}).join(',')}`);
     return text('Ignored');
   }
 
@@ -140,6 +142,7 @@ export const POST: APIRoute = async ({ request }) => {
         console.error('bold-webhook: mark_order_paid failed', error.message);
         return text('Database error', 500);
       }
+      console.log(`bold-webhook: ${reference} SALE_APPROVED -> ${result}`);
       if (result !== 'paid' && result !== 'already_paid') {
         console.warn(`bold-webhook: order ${reference} needs attention: ${result}`);
       }
@@ -184,6 +187,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     default:
       // VOID_REJECTED and any future event types: acknowledge, nothing to do
+      console.warn(`bold-webhook: ignored event type ${event.type} for ${reference}`);
       return text('Ignored');
   }
 };
