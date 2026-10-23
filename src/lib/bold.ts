@@ -32,6 +32,19 @@ export function isBoldTestMode(): boolean {
 }
 
 /**
+ * Product IDs that test-mode webhooks may act on (comma-separated
+ * BOLD_TEST_PRODUCT_IDS). Empty means no test-mode event is applied.
+ */
+export function getBoldTestProductIds(): Set<string> {
+  return new Set(
+    String(getSecret('BOLD_TEST_PRODUCT_IDS') ?? '')
+      .split(',')
+      .map(id => id.trim())
+      .filter(Boolean),
+  );
+}
+
+/**
  * Bold integrity signature: SHA-256("{orderId}{amount}{currency}{secretKey}") as hex.
  * Uses Web Crypto, so it works in both the Node dev server and Cloudflare Workers.
  */

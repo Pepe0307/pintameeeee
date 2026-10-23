@@ -7,8 +7,10 @@
  * SECURITY:
  *   - The `x-bold-signature` header is verified: hex(HMAC-SHA256(key, base64(body))).
  *     The key is BOLD_SECRET_KEY in production and '' in test mode.
- *   - In test mode signatures can be forged, so every event is additionally
- *     confirmed with Bold's API before it is trusted.
+ *   - In test mode signatures can be forged, so events are only applied to
+ *     orders made up entirely of BOLD_TEST_PRODUCT_IDS. A forged event can
+ *     then never touch a real piece. (Bold's notifications API, which could
+ *     confirm events, is not available to our test keys.)
  *   - mark_order_paid() only accepts an event whose amount and currency match
  *     the saved order, and marks products sold atomically.
  *
@@ -18,10 +20,11 @@
 
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
-import { getBoldConfig, isBoldTestMode, verifyWebhookSignature } from '../../lib/bold';
+import { getBoldConfig, getBoldTestProductIds, isBoldTestMode, verifyWebhookSignature } from '../../lib/bold';
+
+type SupabaseAdmin = NonNullable<ReturnType<typeof getSupabaseAdmin>>;
 
 const ORDER_PREFIX = 'PNT-';
-const BOLD_NOTIFICATIONS_URL = 'https://integrations.api.bold.co/payments/webhook/notifications';
 
 interface BoldEvent {
   id?: string;
@@ -39,27 +42,26 @@ function text(body: string, status = 200): Response {
   return new Response(body, { status, headers: { 'Cache-Control': 'no-store' } });
 }
 
-/** Test mode only: ask Bold whether this exact notification really exists. */
-async function confirmWithBold(event: BoldEvent, apiKey: string): Promise<boolean> {
-  const paymentId = event.data?.payment_id;
-  if (!paymentId) return false;
-  try {
-    const res = await fetch(`${BOLD_NOTIFICATIONS_URL}/${encodeURIComponent(paymentId)}`, {
-      headers: { Authorization: `x-api-key ${apiKey}` },
-      signal: AbortSignal.timeout(1500),
-    });
-    if (!res.ok) return false;
-    const body = (await res.json()) as { notifications?: BoldEvent[] };
-    return (body.notifications ?? []).some(n =>
-      n.type === event.type &&
-      n.data?.payment_id === paymentId &&
-      n.data?.metadata?.reference === event.data?.metadata?.reference &&
-      n.data?.amount?.total === event.data?.amount?.total
-    );
-  } catch (err) {
-    console.error('bold-webhook: could not confirm event with Bold', err);
-    return false;
+/**
+ * Test mode only: true if the order exists and every piece in it is a test
+ * product. Returns null on a database error (worth a retry).
+ */
+async function isTestOrder(supabaseAdmin: SupabaseAdmin, orderId: string): Promise<boolean | null> {
+  const testIds = getBoldTestProductIds();
+  if (testIds.size === 0) return false;
+
+  const { data: order, error } = await supabaseAdmin
+    .from('orders')
+    .select('items')
+    .eq('id', orderId)
+    .maybeSingle();
+  if (error) {
+    console.error('bold-webhook: could not load order', error.message);
+    return null;
   }
+
+  const items = Array.isArray(order?.items) ? (order.items as { id?: unknown }[]) : [];
+  return items.length > 0 && items.every(item => typeof item?.id === 'string' && testIds.has(item.id));
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -100,9 +102,13 @@ export const POST: APIRoute = async ({ request }) => {
     return text('Ignored');
   }
 
-  if (testMode && !(await confirmWithBold(event, bold.apiKey))) {
-    console.warn('bold-webhook: test-mode event not confirmed by Bold', event.id);
-    return text('Unconfirmed event', 401);
+  if (testMode) {
+    const testOrder = await isTestOrder(supabaseAdmin, reference);
+    if (testOrder === null) return text('Database error', 500);
+    if (!testOrder) {
+      console.warn(`bold-webhook: test mode, ${reference} is not a test-product order`);
+      return text('Not a test order', 401);
+    }
   }
 
   // ---- 2. Apply the event ----
