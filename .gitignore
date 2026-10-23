@@ -37,3 +37,6 @@ docs/
 
 # local draft files for products
 nuevas_obras.txt
+# local notes and Supabase SQL scripts (not part of the build)
+HANDOVER.md
+supabase/
