@@ -15,7 +15,8 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+.dev.vars
 
 # macOS-specific files
 .DS_Store
@@ -36,3 +37,6 @@ docs/
 
 # local draft files for products
 nuevas_obras.txt
+# local notes and Supabase SQL scripts (not part of the build)
+HANDOVER.md
+supabase/

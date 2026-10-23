@@ -54,6 +54,15 @@ El proyecto requiere las siguientes variables de entorno de Supabase:
 - `PUBLIC_SUPABASE_URL` — URL del proyecto Supabase
 - `PUBLIC_SUPABASE_ANON_KEY` — Llave pública anónima
 
+Pagos en línea con Bold (opcionales):
+
+- `PUBLIC_BOLD_API_KEY` — Llave de identidad de Bold (pública)
+- `BOLD_SECRET_KEY` — Llave secreta de Bold (**Secret** en Cloudflare)
+- `SUPABASE_SERVICE_ROLE_KEY` — Llave service role de Supabase para los pedidos (**Secret** en Cloudflare, nunca con prefijo `PUBLIC_`)
+- `BOLD_TEST_MODE` — `true` solo en local/preview con llaves de prueba de Bold. **Nunca** en producción.
+
+La tabla de pedidos se crea con `supabase/orders.sql` (SQL Editor de Supabase). El webhook de Bold debe apuntar a `https://pintameeeee.com/api/bold-webhook`.
+
 **En local:** Crea un archivo `.env` en la raíz del proyecto.
 **En producción:** Configura las variables en **Cloudflare Pages > Settings > Environment variables**.
 

@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import BoldPayButton from '../../components/BoldPayButton.astro';
+import AddToCartButton from '../../components/AddToCartButton.astro';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
@@ -23,6 +25,9 @@ const { title, artist, price, currency, description, image_url, category, dimens
 const gallery = Array.isArray(gallery_images) ? gallery_images : [];
 // Combine main image with gallery for thumbnails
 const allImages = [image_url, ...gallery].filter(Boolean);
+
+// Bold only charges COP in whole pesos — skip it for unpriced or non-COP products
+const canPayWithBold = typeof price === 'number' && price > 0 && (currency || 'COP').toUpperCase() === 'COP';
 ---
 
 <BaseLayout title={title} description={description} image={image_url} ogType="product">
@@ -101,15 +106,32 @@ const allImages = [image_url, ...gallery].filter(Boolean);
           
           <!-- WhatsApp CTA -->
           {available ? (
-            <div class="mt-auto">
-              <WhatsAppButton 
-                productTitle={title}
-                productPrice={price}
-                currency={currency}
-                size="lg"
+            <div class="mt-auto space-y-4">
+              <!-- Bold + WhatsApp on same row -->
+              <div class="flex flex-row items-stretch gap-3">
+                {canPayWithBold && (
+                  <BoldPayButton productId={product.id} />
+                )}
+                <WhatsAppButton 
+                  productTitle={title}
+                  productPrice={price}
+                  currency={currency}
+                  size="lg"
+                />
+              </div>
+              
+              <!-- Add to Cart — big button below -->
+              <AddToCartButton
+                productId={product.id}
+                productTitle={title || 'Producto'}
+                productPrice={price || 0}
+                currency={currency || 'COP'}
+                imageUrl={image_url || ''}
+                category={category}
               />
-              <p class="text-sm text-gray-500 mt-3">
-                💬 Contáctanos directamente por WhatsApp para comprar o hacer preguntas
+
+              <p class="text-sm text-gray-500 mt-1">
+                🛒 Agrega al carrito, 💬 escríbenos por WhatsApp o 💳 paga en línea
               </p>
             </div>
           ) : (

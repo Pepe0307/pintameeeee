@@ -1,0 +1,133 @@
+---
+/**
+ * /pedido/confirmacion — Bold redirects here after checkout:
+ *   ?bold-order-id=PNT-...&bold-tx-status=approved
+ *
+ * The order status shown comes from our `orders` table (updated by the
+ * webhook), not from the query string, which anyone can edit. The webhook can
+ * arrive a few minutes after the redirect, so 'pending' + approved is shown as
+ * "being confirmed".
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ORDER_ID_RE } from '../../lib/bold';
+import { getSupabaseAdmin } from '../../lib/supabase-admin';
+import { formatPrice } from '../../utils/formatters';
+import { SITE_CONFIG } from '../../utils/config';
+
+const orderId = Astro.url.searchParams.get('bold-order-id') ?? '';
+const txStatus = (Astro.url.searchParams.get('bold-tx-status') ?? '').toLowerCase();
+
+interface OrderItem { title: string | null; quantity: number }
+
+let order: { status: string; amount: number; currency: string; items: OrderItem[] } | null = null;
+
+if (ORDER_ID_RE.test(orderId)) {
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data } = supabaseAdmin
+    ? await supabaseAdmin
+        .from('orders')
+        .select('status, amount, currency, items')
+        .eq('id', orderId)
+        .maybeSingle()
+    : { data: null };
+  if (data) {
+    order = { ...data, items: Array.isArray(data.items) ? (data.items as unknown as OrderItem[]) : [] };
+  }
+}
+
+type View = 'paid' | 'confirming' | 'failed' | 'attention' | 'unknown';
+let view: View = 'unknown';
+if (order?.status === 'paid') view = 'paid';
+else if (order?.status === 'conflict') view = 'attention';
+else if (order?.status === 'rejected' || order?.status === 'voided') view = 'failed';
+else if (order && txStatus === 'approved') view = 'confirming';
+else if (order) view = 'failed';
+
+// Personal page: never cache
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(
+  `¡Hola! Tengo una pregunta sobre mi pedido ${orderId}`
+)}`;
+
+const content: Record<View, { emoji: string; title: string; text: string }> = {
+  paid: {
+    emoji: '🎉',
+    title: '¡Gracias por tu compra!',
+    text: 'Tu pago fue aprobado. Te contactaremos pronto para coordinar el envío de tu pieza.',
+  },
+  confirming: {
+    emoji: '⏳',
+    title: 'Estamos confirmando tu pago',
+    text: 'Bold aprobó tu pago y lo estamos registrando. Puede tardar unos minutos; te contactaremos para coordinar el envío.',
+  },
+  attention: {
+    emoji: '💬',
+    title: 'Recibimos tu pago',
+    text: 'Necesitamos revisar tu pedido. Te contactaremos muy pronto; también puedes escribirnos por WhatsApp.',
+  },
+  failed: {
+    emoji: '😕',
+    title: 'El pago no se completó',
+    text: 'No se realizó ningún cobro. Puedes intentarlo de nuevo desde tu carrito o escribirnos por WhatsApp.',
+  },
+  unknown: {
+    emoji: '🔎',
+    title: 'No encontramos este pedido',
+    text: 'Si realizaste un pago, escríbenos por WhatsApp con el comprobante de Bold y lo revisamos.',
+  },
+};
+const { emoji, title, text } = content[view];
+const paymentSucceeded = view === 'paid' || view === 'confirming' || view === 'attention';
+---
+
+<BaseLayout title="Confirmación de pedido" description="Estado de tu pedido en Pintame">
+  <section class="py-16 px-4">
+    <div class="container mx-auto max-w-2xl text-center" id="order-confirmation" data-paid={paymentSucceeded ? 'true' : 'false'}>
+      <p class="text-6xl mb-6">{emoji}</p>
+      <h1 class="font-display text-4xl md:text-5xl font-bold text-gallery-charcoal mb-4">{title}</h1>
+      <p class="text-lg text-gray-600 mb-8">{text}</p>
+
+      {order && paymentSucceeded && (
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left mb-8">
+          <p class="text-sm text-gray-500 mb-4">Pedido <span class="font-mono">{orderId}</span></p>
+          <ul class="space-y-2 mb-4">
+            {order.items.map(item => (
+              <li class="flex justify-between gap-4">
+                <span class="text-gallery-charcoal">{item.title || 'Producto'}</span>
+                <span class="text-gray-500 shrink-0">x{item.quantity}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="flex justify-between border-t border-gray-100 pt-4">
+            <span class="font-medium text-gallery-charcoal">Total</span>
+            <span class="font-bold text-gallery-newpink">{formatPrice(order.amount, order.currency)}</span>
+          </div>
+        </div>
+      )}
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        {view === 'failed' ? (
+          <a href="/carrito" class="btn-primary px-6 py-3">Volver al carrito</a>
+        ) : (
+          <a href="/catalogo" class="btn-primary px-6 py-3">Seguir explorando</a>
+        )}
+        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="btn-whatsapp px-6 py-3">
+          Escríbenos por WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { clearCart } from '../../utils/cart';
+
+  function clearCartIfPaid() {
+    const el = document.getElementById('order-confirmation');
+    if (el?.dataset.paid === 'true') clearCart();
+  }
+
+  clearCartIfPaid();
+  document.addEventListener('astro:after-swap', clearCartIfPaid);
+</script>
