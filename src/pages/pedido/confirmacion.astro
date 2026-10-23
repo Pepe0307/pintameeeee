@@ -59,7 +59,7 @@ const content: Record<View, { emoji: string; title: string; text: string }> = {
   confirming: {
     emoji: '⏳',
     title: 'Estamos confirmando tu pago',
-    text: 'Bold aprobó tu pago y lo estamos registrando. Puede tardar unos minutos; te contactaremos para coordinar el envío.',
+    text: 'Bold aprobó tu pago y lo estamos registrando. Esta página se actualizará sola en unos segundos; te contactaremos para coordinar el envío.',
   },
   attention: {
     emoji: '💬',
@@ -83,7 +83,7 @@ const paymentSucceeded = view === 'paid' || view === 'confirming' || view === 'a
 
 <BaseLayout title="Confirmación de pedido" description="Estado de tu pedido en Pintame">
   <section class="py-16 px-4">
-    <div class="container mx-auto max-w-2xl text-center" id="order-confirmation" data-paid={paymentSucceeded ? 'true' : 'false'}>
+    <div class="container mx-auto max-w-2xl text-center" id="order-confirmation" data-paid={paymentSucceeded ? 'true' : 'false'} data-confirming={view === 'confirming' ? 'true' : 'false'}>
       <p class="text-6xl mb-6">{emoji}</p>
       <h1 class="font-display text-4xl md:text-5xl font-bold text-gallery-charcoal mb-4">{title}</h1>
       <p class="text-lg text-gray-600 mb-8">{text}</p>
@@ -126,6 +126,18 @@ const paymentSucceeded = view === 'paid' || view === 'confirming' || view === 'a
   function clearCartIfPaid() {
     const el = document.getElementById('order-confirmation');
     if (el?.dataset.paid === 'true') clearCart();
+
+    // The webhook usually lands seconds after the redirect: re-check every 5 s for up to 2 min
+    if (el?.dataset.confirming === 'true') {
+      const url = new URL(location.href);
+      const tries = Number(url.searchParams.get('r')) || 0;
+      if (tries < 24) {
+        setTimeout(() => {
+          url.searchParams.set('r', String(tries + 1));
+          location.replace(url);
+        }, 5000);
+      }
+    }
   }
 
   clearCartIfPaid();
