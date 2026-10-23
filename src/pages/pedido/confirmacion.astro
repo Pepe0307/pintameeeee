@@ -9,11 +9,10 @@
  * "being confirmed".
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ORDER_ID_RE } from '../../lib/bold';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
-
-const ORDER_ID_RE = /^PNT-\d{13}-[0-9a-f]{8}$/;
 
 const orderId = Astro.url.searchParams.get('bold-order-id') ?? '';
 const txStatus = (Astro.url.searchParams.get('bold-tx-status') ?? '').toLowerCase();

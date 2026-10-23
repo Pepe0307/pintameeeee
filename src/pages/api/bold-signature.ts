@@ -22,7 +22,7 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
-import { getBoldConfig, computeIntegritySignature } from '../../lib/bold';
+import { getBoldConfig, computeIntegritySignature, isBoldTestMode, newOrderId } from '../../lib/bold';
 import { parseCustomerDetails } from '../../lib/customer';
 import { MAX_QUANTITY } from '../../utils/cart';
 
@@ -119,7 +119,8 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ error: 'Amount below Bold minimum' }, 400);
   }
 
-  const orderId = `PNT-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  const testMode = isBoldTestMode();
+  const orderId = newOrderId(testMode);
 
   let description = products!
     .map(p => `${p.title || 'Producto'} x${quantities.get(p.id)}`)
@@ -147,6 +148,7 @@ export const POST: APIRoute = async ({ request }) => {
     shipping_city: customer.city,
     shipping_department: customer.department,
     shipping_notes: customer.notes,
+    test_mode: testMode,
   });
   if (orderError) {
     console.error('bold-signature: could not save order', orderError.message);

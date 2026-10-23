@@ -24,6 +24,20 @@ export function getBoldConfig(): BoldConfig | null {
 }
 
 /**
+ * Order IDs (our Bold reference). Orders created in test mode start with
+ * "PNT-TEST-" (and have orders.test_mode = true), so a test payment can never
+ * be mistaken for a real one, and the webhook never mixes the two.
+ */
+export const ORDER_PREFIX = 'PNT-';
+export const TEST_ORDER_PREFIX = 'PNT-TEST-';
+export const ORDER_ID_RE = /^PNT-(TEST-)?\d{13}-[0-9a-f]{8}$/;
+
+export function newOrderId(testMode: boolean): string {
+  const prefix = testMode ? TEST_ORDER_PREFIX : ORDER_PREFIX;
+  return `${prefix}${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+}
+
+/**
  * Bold signs test-mode webhooks with an empty key, so in test mode anyone can
  * forge a valid signature. Must never be enabled in production.
  */

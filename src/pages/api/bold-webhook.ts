@@ -21,11 +21,16 @@
 
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
-import { getBoldConfig, getBoldTestProductIds, isBoldTestMode, verifyWebhookSignature } from '../../lib/bold';
+import {
+  getBoldConfig,
+  getBoldTestProductIds,
+  isBoldTestMode,
+  ORDER_PREFIX,
+  TEST_ORDER_PREFIX,
+  verifyWebhookSignature,
+} from '../../lib/bold';
 
 type SupabaseAdmin = NonNullable<ReturnType<typeof getSupabaseAdmin>>;
-
-const ORDER_PREFIX = 'PNT-';
 
 interface BoldEvent {
   id?: string;
@@ -44,8 +49,9 @@ function text(body: string, status = 200): Response {
 }
 
 /**
- * Test mode only: true if the order exists and every piece in it is a test
- * product. Returns null on a database error (worth a retry).
+ * Test mode only: true if the order exists, was created in test mode and
+ * every piece in it is a test product. Returns null on a database error
+ * (worth a retry).
  */
 async function isTestOrder(supabaseAdmin: SupabaseAdmin, orderId: string): Promise<boolean | null> {
   const testIds = getBoldTestProductIds();
@@ -53,13 +59,14 @@ async function isTestOrder(supabaseAdmin: SupabaseAdmin, orderId: string): Promi
 
   const { data: order, error } = await supabaseAdmin
     .from('orders')
-    .select('items')
+    .select('items, test_mode')
     .eq('id', orderId)
     .maybeSingle();
   if (error) {
     console.error('bold-webhook: could not load order', error.message);
     return null;
   }
+  if (order?.test_mode !== true) return false;
 
   const items = Array.isArray(order?.items) ? (order.items as { id?: unknown }[]) : [];
   return items.length > 0 && items.every(item => typeof item?.id === 'string' && testIds.has(item.id));
@@ -100,6 +107,12 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Events from other Bold channels (POS, payment links…) are not ours
   if (!reference.startsWith(ORDER_PREFIX)) {
+    return text('Ignored');
+  }
+
+  // Test orders are only handled in test mode, real orders only in live mode
+  if (reference.startsWith(TEST_ORDER_PREFIX) !== testMode) {
+    console.warn(`bold-webhook: ${reference} belongs to the other mode (test mode: ${testMode})`);
     return text('Ignored');
   }
 

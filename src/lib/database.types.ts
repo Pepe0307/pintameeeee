@@ -80,6 +80,7 @@ export interface Database {
           shipping_city: string | null
           shipping_department: string | null
           shipping_notes: string | null
+          test_mode: boolean
           created_at: string
           updated_at: string
           paid_at: string | null
@@ -103,6 +104,7 @@ export interface Database {
           shipping_city?: string | null
           shipping_department?: string | null
           shipping_notes?: string | null
+          test_mode?: boolean
           created_at?: string
           updated_at?: string
           paid_at?: string | null
@@ -126,6 +128,7 @@ export interface Database {
           shipping_city?: string | null
           shipping_department?: string | null
           shipping_notes?: string | null
+          test_mode?: boolean
           created_at?: string
           updated_at?: string
           paid_at?: string | null
