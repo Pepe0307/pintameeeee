@@ -216,8 +216,12 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
         if (event.target === dialog) dialog.close();
       });
 
+      // One order per submit: ignore submits while one is in flight
+      let submitting = false;
+
       form.addEventListener('submit', async event => {
         event.preventDefault();
+        if (submitting) return;
         formMessage.classList.add('hidden');
 
         const invalid = [...form.elements]
@@ -245,12 +249,14 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
           notes: String(data.get('notes') ?? '') || null,
         };
 
+        submitting = true;
         submit.disabled = true;
         submit.textContent = 'Preparando pago…';
         button.disabled = true;
 
         const result = await startBoldCheckout(items, customer);
 
+        submitting = false;
         submit.disabled = false;
         submit.textContent = SUBMIT_LABEL;
         setIdle();
