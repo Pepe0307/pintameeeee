@@ -9,7 +9,9 @@
  * Docs: https://developers.bold.co/pagos-en-linea/boton-de-pagos/integracion-manual/integracion-personalizada
  */
 
-const BOLD_SCRIPT_URL = 'https://checkout.bold.co/library/boldPaymentButton.js';
+import type { CustomerDetails } from '../lib/customer';
+
+const BOLD_SCRIPT_URL ='https://checkout.bold.co/library/boldPaymentButton.js';
 const CONFIRMATION_PATH = '/pedido/confirmacion';
 
 interface BoldCheckoutInstance {
@@ -45,14 +47,15 @@ export function loadBoldLibrary(): Promise<void> {
   return libraryPromise;
 }
 
-export type BoldCheckoutResult = 'opened' | 'unavailable' | 'error';
+export type BoldCheckoutResult = 'opened' | 'unavailable' | 'invalid-customer' | 'error';
 
 /**
  * Creates the order on the server and opens Bold's checkout.
- * Call this from a click handler.
+ * Call this from a click or submit handler.
  */
 export async function startBoldCheckout(
   items: { id: string; quantity: number }[],
+  customer: CustomerDetails,
 ): Promise<BoldCheckoutResult> {
   try {
     // Load the library first, so an ad blocker doesn't leave an orphan order
@@ -62,10 +65,15 @@ export async function startBoldCheckout(
     const res = await fetch('/api/bold-signature', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items }),
+      body: JSON.stringify({ items, customer }),
     });
     if (!res.ok) {
-      return res.status === 409 ? 'unavailable' : 'error';
+      if (res.status === 409) return 'unavailable';
+      if (res.status === 400) {
+        const body = await res.json().catch(() => ({}));
+        if (Array.isArray(body?.fields)) return 'invalid-customer';
+      }
+      return 'error';
     }
     const data = await res.json();
 
@@ -76,6 +84,19 @@ export async function startBoldCheckout(
       apiKey: data.apiKey,
       integritySignature: data.integritySignature,
       description: data.description,
+      // Pre-fills Bold's form so the buyer doesn't type it twice
+      customerData: JSON.stringify({
+        email: customer.email,
+        fullName: customer.fullName,
+        phone: customer.phone.replace(/\D/g, ''),
+        dialCode: '+57',
+      }),
+      billingAddress: JSON.stringify({
+        address: customer.address,
+        city: customer.city,
+        state: customer.department,
+        country: 'CO',
+      }),
     };
     // Bold only accepts HTTPS redirection URLs (so not on http://localhost)
     if (location.protocol === 'https:') {

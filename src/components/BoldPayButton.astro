@@ -8,7 +8,8 @@
  * - With `productId`: pays for that single product (product page).
  * - Without it: pays for the current localStorage cart (cart page).
  *
- * The order is created only when the button is clicked (see utils/bold-client.ts),
+ * Clicking the button first asks for the buyer's delivery details in a dialog.
+ * The order is created only when that form is submitted (see utils/bold-client.ts),
  * so page views and crawlers don't create orders. Prices always come from
  * Supabase on the server, never from the browser.
  *
@@ -17,6 +18,7 @@
  */
 
 import { getBoldConfig } from '../lib/bold';
+import { COLOMBIA_DEPARTMENTS, CUSTOMER_LIMITS } from '../lib/customer';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 
 interface Props {
@@ -37,6 +39,62 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
       <svg class="bold-pay-logo" width="59" height="20" viewBox="0 0 59 20" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bold" data-bold-pay-logo><path d="M18.0741 13.5664H32.349C32.0058 17.1701 28.9365 19.9994 25.2109 19.9994C21.4854 19.9994 18.4167 17.1701 18.0735 13.5664H18.0741ZM7.88967 5.8245V19.9674C11.5252 19.6273 14.3817 16.5859 14.3817 12.8957C14.3817 9.20543 11.5252 6.1652 7.88967 5.82509V5.8245ZM25.2115 5.7925C21.4866 5.7925 18.4173 8.62298 18.0741 12.2267H32.349C32.0058 8.62298 28.9365 5.7925 25.2109 5.7925H25.2115ZM0.679688 10.9546V20H6.49433V0H0.679688V10.9546ZM52.5057 0V19.9994H58.3203V0H52.5057ZM44.6599 12.8962C44.6599 13.3454 44.7041 13.7838 44.785 14.2099C45.3688 17.2851 47.9588 19.6682 51.1526 19.9668V5.8245C47.5171 6.1646 44.6605 9.20602 44.6605 12.8962H44.6599ZM35.2896 19.9994H41.1042V0H35.2896V19.9994Z" fill="white"/></svg>
     </button>
     <p class="hidden text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg" data-bold-pay-message role="alert"></p>
+
+    <dialog class="bold-pay-dialog w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl p-0 bg-white text-gallery-charcoal shadow-xl" data-bold-pay-dialog aria-labelledby="bold-pay-dialog-title">
+      <form class="p-6 space-y-4" data-bold-pay-form novalidate>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="bold-pay-dialog-title" class="font-display text-2xl font-bold">Datos de envío</h2>
+            <p class="text-sm text-gray-500 mt-1">¿A quién y a dónde enviamos tu pedido?</p>
+          </div>
+          <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl leading-none cursor-pointer" data-bold-pay-close aria-label="Cerrar">×</button>
+        </div>
+
+        <label class="block">
+          <span class="field-label">Nombre completo de quien recibe</span>
+          <input class="field-input" type="text" name="fullName" autocomplete="name" required minlength="3" maxlength={CUSTOMER_LIMITS.fullName} />
+        </label>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="field-label">Celular</span>
+            <input class="field-input" type="tel" name="phone" autocomplete="tel-national" inputmode="tel" required pattern="[0-9 +()\-]{7,20}" placeholder="300 123 4567" />
+          </label>
+          <label class="block">
+            <span class="field-label">Correo electrónico</span>
+            <input class="field-input" type="email" name="email" autocomplete="email" required maxlength={CUSTOMER_LIMITS.email} />
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="field-label">Dirección</span>
+          <input class="field-input" type="text" name="address" autocomplete="street-address" required minlength="5" maxlength={CUSTOMER_LIMITS.address} placeholder="Calle 123 # 45-67, apto 801" />
+        </label>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="field-label">Ciudad o municipio</span>
+            <input class="field-input" type="text" name="city" autocomplete="address-level2" required minlength="2" maxlength={CUSTOMER_LIMITS.city} />
+          </label>
+          <label class="block">
+            <span class="field-label">Departamento</span>
+            <select class="field-input" name="department" autocomplete="address-level1" required>
+              <option value="">Selecciona…</option>
+              {COLOMBIA_DEPARTMENTS.map(d => <option value={d}>{d}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="field-label">Indicaciones para la entrega <span class="text-gray-400 font-normal">(opcional)</span></span>
+          <textarea class="field-input" name="notes" rows="2" maxlength={CUSTOMER_LIMITS.notes} placeholder="Barrio, conjunto, horario…"></textarea>
+        </label>
+
+        <p class="hidden text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg" data-bold-pay-form-message role="alert"></p>
+
+        <button type="submit" class="bold-pay-button" data-bold-pay-submit>Continuar al pago</button>
+      </form>
+    </dialog>
   </div>
 )}
 
@@ -66,6 +124,29 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
   .bold-pay-button:focus-visible { outline: 3px solid #121e6c; outline-offset: 2px; }
   .bold-pay-button:disabled { opacity: 0.7; cursor: wait; }
   .bold-pay-logo { width: 59px; height: 20px; flex-shrink: 0; }
+
+  .bold-pay-dialog { margin: auto; }
+  .bold-pay-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  .field-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .field-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 1rem;
+  }
+  .field-input:focus {
+    outline: none;
+    border-color: var(--color-gallery-newpink);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gallery-newpink) 25%, transparent);
+  }
+  .field-input[aria-invalid='true'] { border-color: #d97706; }
 </style>
 
 <script>
@@ -77,7 +158,9 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
     productUnavailable: 'Esta pieza ya no está disponible.',
     cartUnavailable: 'Algunas piezas de tu carrito ya no están disponibles. Elimínalas para pagar en línea.',
     error: 'No pudimos iniciar el pago. Intenta de nuevo o escríbenos por WhatsApp.',
+    invalidCustomer: 'Revisa los campos marcados.',
   };
+  const SUBMIT_LABEL = 'Continuar al pago';
 
   function setupBoldPayButtons() {
     const wrappers = document.querySelectorAll<HTMLElement>('[data-bold-pay]');
@@ -100,33 +183,93 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
         logo.style.display = '';
       };
       const message = wrapper.querySelector<HTMLElement>('[data-bold-pay-message]')!;
+      const dialog = wrapper.querySelector<HTMLDialogElement>('[data-bold-pay-dialog]')!;
+      const form = wrapper.querySelector<HTMLFormElement>('[data-bold-pay-form]')!;
+      const formMessage = wrapper.querySelector<HTMLElement>('[data-bold-pay-form-message]')!;
+      const submit = wrapper.querySelector<HTMLButtonElement>('[data-bold-pay-submit]')!;
       const productId = wrapper.dataset.productId;
 
-      button.addEventListener('click', async () => {
-        const items = productId
-          ? [{ id: productId, quantity: 1 }]
-          : getCart().map(item => ({ id: item.id, quantity: item.quantity }));
-        if (items.length === 0) return;
+      const getItems = () => productId
+        ? [{ id: productId, quantity: 1 }]
+        : getCart().map(item => ({ id: item.id, quantity: item.quantity }));
 
-        button.disabled = true;
-        label.textContent = 'Preparando pago…';
-        logo.style.display = 'none';
+      const showFormMessage = (text: string) => {
+        formMessage.textContent = text;
+        formMessage.classList.remove('hidden');
+      };
+      const markInvalid = (names: string[]) => {
+        form.querySelectorAll<HTMLElement>('[name]').forEach(field => {
+          field.setAttribute('aria-invalid', String(names.includes(field.getAttribute('name')!)));
+        });
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      };
+
+      button.addEventListener('click', () => {
+        if (getItems().length === 0) return;
         message.classList.add('hidden');
+        formMessage.classList.add('hidden');
+        dialog.showModal();
+      });
+      wrapper.querySelector('[data-bold-pay-close]')!.addEventListener('click', () => dialog.close());
+      // Close when clicking the backdrop
+      dialog.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+      });
 
-        const result = await startBoldCheckout(items);
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        formMessage.classList.add('hidden');
 
-        if (result === 'opened') {
-          label.textContent = 'Abriendo Bold…';
-          // Re-enable in case the customer closes the checkout and stays here
-          setTimeout(setIdle, 4000);
+        const invalid = [...form.elements]
+          .filter((el): el is HTMLInputElement => 'checkValidity' in el && !(el as HTMLInputElement).checkValidity())
+          .map(el => el.name)
+          .filter(Boolean);
+        if (invalid.length > 0) {
+          markInvalid(invalid);
+          showFormMessage(MESSAGES.invalidCustomer);
           return;
         }
+        markInvalid([]);
 
+        const items = getItems();
+        if (items.length === 0) return;
+
+        const data = new FormData(form);
+        const customer = {
+          fullName: String(data.get('fullName') ?? ''),
+          email: String(data.get('email') ?? ''),
+          phone: String(data.get('phone') ?? ''),
+          address: String(data.get('address') ?? ''),
+          city: String(data.get('city') ?? ''),
+          department: String(data.get('department') ?? ''),
+          notes: String(data.get('notes') ?? '') || null,
+        };
+
+        submit.disabled = true;
+        submit.textContent = 'Preparando pago…';
+        button.disabled = true;
+
+        const result = await startBoldCheckout(items, customer);
+
+        submit.disabled = false;
+        submit.textContent = SUBMIT_LABEL;
         setIdle();
-        message.textContent = result === 'unavailable'
-          ? (productId ? MESSAGES.productUnavailable : MESSAGES.cartUnavailable)
-          : MESSAGES.error;
-        message.classList.remove('hidden');
+
+        if (result === 'opened') {
+          dialog.close();
+          return;
+        }
+        if (result === 'invalid-customer') {
+          showFormMessage(MESSAGES.invalidCustomer);
+          return;
+        }
+        if (result === 'unavailable') {
+          dialog.close();
+          message.textContent = productId ? MESSAGES.productUnavailable : MESSAGES.cartUnavailable;
+          message.classList.remove('hidden');
+          return;
+        }
+        showFormMessage(MESSAGES.error);
       });
     });
   }

@@ -73,6 +73,13 @@ export interface Database {
           payment_method: string | null
           last_event: string | null
           note: string | null
+          customer_name: string | null
+          customer_email: string | null
+          customer_phone: string | null
+          shipping_address: string | null
+          shipping_city: string | null
+          shipping_department: string | null
+          shipping_notes: string | null
           created_at: string
           updated_at: string
           paid_at: string | null
@@ -89,6 +96,13 @@ export interface Database {
           payment_method?: string | null
           last_event?: string | null
           note?: string | null
+          customer_name?: string | null
+          customer_email?: string | null
+          customer_phone?: string | null
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_department?: string | null
+          shipping_notes?: string | null
           created_at?: string
           updated_at?: string
           paid_at?: string | null
@@ -105,6 +119,13 @@ export interface Database {
           payment_method?: string | null
           last_event?: string | null
           note?: string | null
+          customer_name?: string | null
+          customer_email?: string | null
+          customer_phone?: string | null
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_department?: string | null
+          shipping_notes?: string | null
           created_at?: string
           updated_at?: string
           paid_at?: string | null

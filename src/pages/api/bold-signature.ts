@@ -11,7 +11,10 @@
  * Before returning the signature, a 'pending' row is saved in the `orders`
  * table so the Bold webhook (/api/bold-webhook) knows what was bought.
  *
- * Request body: { items: Array<{ id: string; quantity: number }> }
+ * The buyer's delivery details are validated and saved on the order too
+ * (see lib/customer.ts).
+ *
+ * Request body: { items: Array<{ id: string; quantity: number }>, customer: CustomerDetails }
  * Response:     { orderId, amount, currency, description, integritySignature, apiKey }
  * Errors:       400 invalid input · 409 unavailable/unknown products · 503 not configured
  */
@@ -20,6 +23,7 @@ import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature } from '../../lib/bold';
+import { parseCustomerDetails } from '../../lib/customer';
 
 const MAX_ITEMS = 50;
 const MAX_QUANTITY = 10;
@@ -73,6 +77,12 @@ export const POST: APIRoute = async ({ request }) => {
     }
     quantities.set(id, total);
   }
+
+  const parsedCustomer = parseCustomerDetails((body as { customer?: unknown })?.customer);
+  if (!parsedCustomer.ok) {
+    return json({ error: 'Invalid customer details', fields: parsedCustomer.fields }, 400);
+  }
+  const { customer } = parsedCustomer;
 
   // ---- 2. Load authoritative product data from Supabase ----
   const ids = [...quantities.keys()];
@@ -130,6 +140,13 @@ export const POST: APIRoute = async ({ request }) => {
       quantity: quantities.get(p.id)!,
       price: p.price,
     })),
+    customer_name: customer.fullName,
+    customer_email: customer.email,
+    customer_phone: customer.phone,
+    shipping_address: customer.address,
+    shipping_city: customer.city,
+    shipping_department: customer.department,
+    shipping_notes: customer.notes,
   });
   if (orderError) {
     console.error('bold-signature: could not save order', orderError.message);
