@@ -12,7 +12,8 @@
  *     then never touch a real piece. (Bold's notifications API, which could
  *     confirm events, is not available to our test keys.)
  *   - mark_order_paid() only accepts an event whose amount and currency match
- *     the saved order, and marks products sold atomically.
+ *     the saved order. Pieces stay on sale after a payment (they can be made
+ *     again); Lida switches them off in /admin.
  *
  * Bold requires a 200 within 2 seconds; any other status is retried
  * (15 min, 1 h, 4 h, 8 h, 24 h). We return 500 only for errors worth retrying.
@@ -151,14 +152,13 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     case 'VOID_APPROVED': {
-      // Payment cancelled/refunded. Products are NOT put back on sale
-      // automatically — Lida decides that in the admin.
+      // Payment cancelled/refunded in Bold
       const { error } = await supabaseAdmin
         .from('orders')
         .update({
           status: 'voided',
           last_event: event.type,
-          note: 'Pago anulado en Bold. Revisar si la pieza vuelve a estar disponible.',
+          note: 'Pago anulado en Bold.',
           updated_at: new Date().toISOString(),
         })
         .eq('id', reference);

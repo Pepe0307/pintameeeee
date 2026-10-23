@@ -24,9 +24,9 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature } from '../../lib/bold';
 import { parseCustomerDetails } from '../../lib/customer';
+import { MAX_QUANTITY } from '../../utils/cart';
 
 const MAX_ITEMS = 50;
-const MAX_QUANTITY = 10;
 const MAX_DESCRIPTION_LENGTH = 100;
 const MIN_AMOUNT_COP = 1000; // Bold's minimum charge
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

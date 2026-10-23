@@ -35,12 +35,15 @@ function saveCart(cart: CartItem[]): void {
   window.dispatchEvent(new CustomEvent('cart-updated', { detail: cart }));
 }
 
+/** Most units of one product per order (also enforced by /api/bold-signature) */
+export const MAX_QUANTITY = 10;
+
 /** Add a product to the cart (or increment quantity if already exists) */
 export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   const cart = getCart();
   const existing = cart.find(i => i.id === item.id);
   if (existing) {
-    existing.quantity += 1;
+    existing.quantity = Math.min(existing.quantity + 1, MAX_QUANTITY);
   } else {
     cart.push({ ...item, quantity: 1 });
   }
@@ -62,7 +65,7 @@ export function updateQuantity(id: string, quantity: number): void {
   const cart = getCart();
   const item = cart.find(i => i.id === id);
   if (item) {
-    item.quantity = quantity;
+    item.quantity = Math.min(quantity, MAX_QUANTITY);
     saveCart(cart);
   }
 }
