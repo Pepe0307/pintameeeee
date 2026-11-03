@@ -39,6 +39,14 @@ import BoldPayButton from '../components/BoldPayButton.astro';
 
       <!-- Cart summary -->
       <div id="cart-summary" class="hidden mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex justify-between items-center mb-2 text-gray-600">
+          <span>Subtotal</span>
+          <span id="cart-subtotal"></span>
+        </div>
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 text-gray-600">
+          <span>Envío</span>
+          <span id="cart-shipping"></span>
+        </div>
         <div class="flex justify-between items-center mb-6">
           <span class="text-lg font-medium text-gallery-charcoal">Total</span>
           <span id="cart-total" class="text-2xl font-bold text-gallery-newpink"></span>
@@ -83,7 +91,7 @@ import BoldPayButton from '../components/BoldPayButton.astro';
 </BaseLayout>
 
 <script>
-  import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal, MAX_QUANTITY } from '../utils/cart';
+  import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal, MAX_QUANTITY, SHIPPING_COP } from '../utils/cart';
 
   const WHATSAPP_NUMBER = '+573203743938';
 
@@ -170,8 +178,11 @@ import BoldPayButton from '../components/BoldPayButton.astro';
     `;
     }).join('');
 
-    // Total
-    const total = getCartTotal();
+    // Subtotal + shipping = total
+    const subtotal = getCartTotal();
+    const total = subtotal + SHIPPING_COP;
+    document.getElementById('cart-subtotal')!.textContent = formatPriceCOP(subtotal);
+    document.getElementById('cart-shipping')!.textContent = formatPriceCOP(SHIPPING_COP);
     if (totalEl) {
       totalEl.textContent = formatPriceCOP(total);
     }
@@ -182,7 +193,7 @@ import BoldPayButton from '../components/BoldPayButton.astro';
         `• ${item.title} (x${item.quantity}) - ${formatPriceCOP(item.price * item.quantity)}`
       );
       const message = encodeURIComponent(
-        `¡Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\nTotal: ${formatPriceCOP(total)}`
+        `¡Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\nEnvío: ${formatPriceCOP(SHIPPING_COP)}\nTotal: ${formatPriceCOP(total)}`
       );
       whatsappBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     }

@@ -6,6 +6,7 @@ import AddToCartButton from '../../components/AddToCartButton.astro';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../utils/formatters';
 import { SITE_CONFIG } from '../../utils/config';
+import { SHIPPING_COP } from '../../utils/cart';
 import { translateCategory } from '../../utils/translations';
 import { Image } from 'astro:assets';
 
@@ -77,9 +78,10 @@ const canPayWithBold = typeof price === 'number' && price > 0 && (currency || 'C
             por {artist}
           </p>
           
-          <p class="text-3xl font-bold text-gallery-newpink mb-6">
+          <p class="text-3xl font-bold text-gallery-newpink mb-1">
             {formatPrice(price, currency)}
           </p>
+          <p class="text-lg font-medium text-gray-600 mb-6">{typeof price === 'number' && `+ ${formatPrice(SHIPPING_COP)} de envío`}</p>
           
           <p class="text-gray-600 leading-relaxed mb-6">
             {description}

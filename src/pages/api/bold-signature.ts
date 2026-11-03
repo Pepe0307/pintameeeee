@@ -15,6 +15,8 @@
  * (see lib/customer.ts).
  *
  * Request body: { items: Array<{ id: string; quantity: number }>, customer: CustomerDetails }
+ * The amount includes the flat SHIPPING_COP fee.
+ *
  * Response:     { orderId, amount, currency, description, integritySignature, apiKey }
  * Errors:       400 invalid input · 409 unavailable/unknown products · 503 not configured
  */
@@ -24,7 +26,7 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature, isBoldTestMode, newOrderId } from '../../lib/bold';
 import { parseCustomerDetails } from '../../lib/customer';
-import { MAX_QUANTITY } from '../../utils/cart';
+import { MAX_QUANTITY, SHIPPING_COP } from '../../utils/cart';
 
 const MAX_ITEMS = 50;
 const MAX_DESCRIPTION_LENGTH = 100;
@@ -111,10 +113,10 @@ export const POST: APIRoute = async ({ request }) => {
   }
   const currency = 'COP';
 
-  // ---- 3. Compute amount, order ID and description on the server ----
+  // ---- 3. Compute amount (products + shipping), order ID and description on the server ----
   const amount = Math.round(
     products!.reduce((sum, p) => sum + p.price! * quantities.get(p.id)!, 0)
-  );
+  ) + SHIPPING_COP;
   if (amount < MIN_AMOUNT_COP) {
     return json({ error: 'Amount below Bold minimum' }, 400);
   }
@@ -124,7 +126,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   let description = products!
     .map(p => `${p.title || 'Producto'} x${quantities.get(p.id)}`)
-    .join(', ');
+    .join(', ') + ', envío';
   if (description.length > MAX_DESCRIPTION_LENGTH) {
     description = `${description.slice(0, MAX_DESCRIPTION_LENGTH - 1)}…`;
   }
