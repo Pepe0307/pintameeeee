@@ -38,6 +38,9 @@ function saveCart(cart: CartItem[]): void {
 /** Most units of one product per order (also enforced by /api/bold-signature) */
 export const MAX_QUANTITY = 10;
 
+/** Flat shipping fee per order, in COP (also charged by /api/bold-signature) */
+export const SHIPPING_COP = 18000;
+
 /** Add a product to the cart (or increment quantity if already exists) */
 export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   const cart = getCart();
