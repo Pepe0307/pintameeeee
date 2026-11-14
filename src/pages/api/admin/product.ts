@@ -30,7 +30,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
           .from('products')
-          .upload(fileName, image);
+          // Unique file names never change content, so browsers and CDN can cache for a year
+          .upload(fileName, image, { cacheControl: '31536000', contentType: image.type });
           
       if (uploadError) {
         throw new Error(`Error subiendo imagen. Asegúrate de tener un bucket público llamado 'products'. Detalle: ${uploadError.message}`);
