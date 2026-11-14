@@ -121,6 +121,24 @@ if (authError || !user) {
   const spinner = document.getElementById('loadingSpinner') as HTMLElement;
   const statusMsg = document.getElementById('statusMessage') as HTMLElement;
 
+  // Phone photos are 2+ MB; serving them as-is burns Supabase egress. Same settings as scripts/compress-images.mjs.
+  async function shrinkImage(file: File): Promise<File> {
+    const bitmap = await createImageBitmap(file); // applies EXIF orientation
+    const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const toBlob = (type: string, quality: number) =>
+      new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
+    // Older Safari can't encode WebP and silently returns PNG, so fall back to JPEG
+    let blob = await toBlob('image/webp', 0.75);
+    if (blob?.type !== 'image/webp') blob = await toBlob('image/jpeg', 0.8);
+    if (!blob || blob.size >= file.size) return file;
+    const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.' + ext, { type: blob.type });
+  }
+
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -133,6 +151,10 @@ if (authError || !user) {
 
       try {
         const formData = new FormData(form);
+        const image = formData.get('image');
+        if (image instanceof File && image.size > 0) {
+          formData.set('image', await shrinkImage(image));
+        }
         const response = await fetch('/api/admin/product', {
           method: 'POST',
           body: formData,
