@@ -41,6 +41,21 @@ export const MAX_QUANTITY = 10;
 /** Flat shipping fee per order, in COP (also charged by /api/bold-signature) */
 export const SHIPPING_COP = 18000;
 
+/** Products in this category are courses: nothing to ship */
+export const COURSE_CATEGORY = 'courses';
+
+/** Shipping for an order: free when every item is a course */
+export function shippingFor(categories: (string | null)[]): number {
+  return categories.some(c => c !== COURSE_CATEGORY) ? SHIPPING_COP : 0;
+}
+
+/** Bundle discount in COP: 10% off the courses for 2 different courses, 15% for 3 or more */
+export function courseDiscount(items: { category: string | null; price: number; quantity: number }[]): number {
+  const courses = items.filter(i => i.category === COURSE_CATEGORY);
+  const rate = courses.length >= 3 ? 0.15 : courses.length === 2 ? 0.1 : 0;
+  return Math.round(courses.reduce((sum, i) => sum + i.price * i.quantity, 0) * rate);
+}
+
 /** Add a product to the cart (or increment quantity if already exists) */
 export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   const cart = getCart();

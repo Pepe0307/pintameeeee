@@ -43,7 +43,11 @@ import BoldPayButton from '../components/BoldPayButton.astro';
           <span>Subtotal</span>
           <span id="cart-subtotal"></span>
         </div>
-        <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 text-gray-600">
+        <div id="cart-discount-row" class="flex justify-between items-center mb-2 text-gray-600">
+          <span>Descuento por combo de cursos</span>
+          <span id="cart-discount"></span>
+        </div>
+        <div id="cart-shipping-row" class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 text-gray-600">
           <span>Envío a todo Colombia</span>
           <span id="cart-shipping"></span>
         </div>
@@ -91,7 +95,7 @@ import BoldPayButton from '../components/BoldPayButton.astro';
 </BaseLayout>
 
 <script>
-  import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal, MAX_QUANTITY, SHIPPING_COP } from '../utils/cart';
+  import { getCart, removeFromCart, updateQuantity, clearCart, getCartTotal, MAX_QUANTITY, shippingFor, courseDiscount } from '../utils/cart';
 
   const WHATSAPP_NUMBER = '+573203743938';
 
@@ -180,9 +184,14 @@ import BoldPayButton from '../components/BoldPayButton.astro';
 
     // Subtotal + shipping = total
     const subtotal = getCartTotal();
-    const total = subtotal + SHIPPING_COP;
+    const shipping = shippingFor(cart.map(item => item.category));
+    const discount = courseDiscount(cart);
+    const total = subtotal + shipping - discount;
     document.getElementById('cart-subtotal')!.textContent = formatPriceCOP(subtotal);
-    document.getElementById('cart-shipping')!.textContent = formatPriceCOP(SHIPPING_COP);
+    document.getElementById('cart-shipping')!.textContent = formatPriceCOP(shipping);
+    document.getElementById('cart-shipping-row')!.classList.toggle('hidden', shipping === 0);
+    document.getElementById('cart-discount')!.textContent = `−${formatPriceCOP(discount)}`;
+    document.getElementById('cart-discount-row')!.classList.toggle('hidden', discount === 0);
     if (totalEl) {
       totalEl.textContent = formatPriceCOP(total);
     }
@@ -193,7 +202,7 @@ import BoldPayButton from '../components/BoldPayButton.astro';
         `• ${item.title} (x${item.quantity}) - ${formatPriceCOP(item.price * item.quantity)}`
       );
       const message = encodeURIComponent(
-        `¡Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\nEnvío: ${formatPriceCOP(SHIPPING_COP)}\nTotal: ${formatPriceCOP(total)}`
+        `¡Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\n${discount ? `Descuento combo cursos: −${formatPriceCOP(discount)}\n` : ''}${shipping ? `Envío: ${formatPriceCOP(shipping)}\n` : ''}Total: ${formatPriceCOP(total)}`
       );
       whatsappBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     }
