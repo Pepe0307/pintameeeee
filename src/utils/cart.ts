@@ -49,6 +49,11 @@ export function shippingFor(categories: (string | null)[]): number {
   return categories.some(c => c !== COURSE_CATEGORY) ? SHIPPING_COP : 0;
 }
 
+/** Most units per order for a product: one per course, MAX_QUANTITY otherwise */
+export function maxQuantityFor(category: string | null): number {
+  return category === COURSE_CATEGORY ? 1 : MAX_QUANTITY;
+}
+
 /** Bundle discount in COP: 10% off the courses for 2 different courses, 15% for 3 or more */
 export function courseDiscount(items: { category: string | null; price: number; quantity: number }[]): number {
   const courses = items.filter(i => i.category === COURSE_CATEGORY);
@@ -61,7 +66,7 @@ export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   const cart = getCart();
   const existing = cart.find(i => i.id === item.id);
   if (existing) {
-    existing.quantity = Math.min(existing.quantity + 1, MAX_QUANTITY);
+    existing.quantity = Math.min(existing.quantity + 1, maxQuantityFor(existing.category));
   } else {
     cart.push({ ...item, quantity: 1 });
   }
@@ -83,7 +88,7 @@ export function updateQuantity(id: string, quantity: number): void {
   const cart = getCart();
   const item = cart.find(i => i.id === id);
   if (item) {
-    item.quantity = Math.min(quantity, MAX_QUANTITY);
+    item.quantity = Math.min(quantity, maxQuantityFor(item.category));
     saveCart(cart);
   }
 }
