@@ -27,7 +27,7 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature, isBoldTestMode, newOrderId } from '../../lib/bold';
 import { parseCustomerDetails } from '../../lib/customer';
-import { MAX_QUANTITY, shippingFor, courseDiscount } from '../../utils/cart';
+import { MAX_QUANTITY, maxQuantityFor, shippingFor, courseDiscount } from '../../utils/cart';
 
 const MAX_ITEMS = 50;
 const MAX_DESCRIPTION_LENGTH = 100;
@@ -106,6 +106,11 @@ export const POST: APIRoute = async ({ request }) => {
   });
   if (invalidIds.length > 0) {
     return json({ error: 'Some products are no longer available', invalidIds }, 409);
+  }
+
+  // Courses can only be bought once per order
+  if (products!.some(p => quantities.get(p.id)! > maxQuantityFor(p.category))) {
+    return json({ error: 'Invalid quantity' }, 400);
   }
 
   // Bold only charges COP in whole pesos
