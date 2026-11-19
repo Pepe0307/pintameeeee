@@ -9,6 +9,7 @@ export const categoryTranslations: Record<string, string> = {
   drawing: 'Dibujo',
   'digital-art': 'Arte Digital',
   'mixed-media': 'Técnica Mixta',
+  courses: 'Cursos',
 };
 
 export const translateCategory = (category: string) => {

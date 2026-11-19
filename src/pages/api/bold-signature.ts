@@ -15,7 +15,8 @@
  * (see lib/customer.ts).
  *
  * Request body: { items: Array<{ id: string; quantity: number }>, customer: CustomerDetails }
- * The amount includes the flat SHIPPING_COP fee.
+ * The amount includes the flat SHIPPING_COP fee, unless every item is a course,
+ * minus the course bundle discount (courseDiscount).
  *
  * Response:     { orderId, amount, currency, description, integritySignature, apiKey }
  * Errors:       400 invalid input · 409 unavailable/unknown products · 503 not configured
@@ -26,7 +27,7 @@ import { supabase } from '../../lib/supabase';
 import { getSupabaseAdmin } from '../../lib/supabase-admin';
 import { getBoldConfig, computeIntegritySignature, isBoldTestMode, newOrderId } from '../../lib/bold';
 import { parseCustomerDetails } from '../../lib/customer';
-import { MAX_QUANTITY, SHIPPING_COP } from '../../utils/cart';
+import { MAX_QUANTITY, shippingFor, courseDiscount } from '../../utils/cart';
 
 const MAX_ITEMS = 50;
 const MAX_DESCRIPTION_LENGTH = 100;
@@ -90,7 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
   const ids = [...quantities.keys()];
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, title, price, currency, available')
+    .select('id, title, price, currency, available, category')
     .in('id', ids);
 
   if (error) {
@@ -114,9 +115,13 @@ export const POST: APIRoute = async ({ request }) => {
   const currency = 'COP';
 
   // ---- 3. Compute amount (products + shipping), order ID and description on the server ----
+  const shipping = shippingFor(products!.map(p => p.category));
+  const discount = courseDiscount(
+    products!.map(p => ({ category: p.category, price: p.price!, quantity: quantities.get(p.id)! }))
+  );
   const amount = Math.round(
     products!.reduce((sum, p) => sum + p.price! * quantities.get(p.id)!, 0)
-  ) + SHIPPING_COP;
+  ) + shipping - discount;
   if (amount < MIN_AMOUNT_COP) {
     return json({ error: 'Amount below Bold minimum' }, 400);
   }
@@ -126,7 +131,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   let description = products!
     .map(p => `${p.title || 'Producto'} x${quantities.get(p.id)}`)
-    .join(', ') + ', envío';
+    .join(', ') + (shipping ? ', envío' : '') + (discount ? ', descuento cursos' : '');
   if (description.length > MAX_DESCRIPTION_LENGTH) {
     description = `${description.slice(0, MAX_DESCRIPTION_LENGTH - 1)}…`;
   }
