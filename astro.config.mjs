@@ -27,7 +27,8 @@ export default defineConfig({
       SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
-  integrations: [sitemap()],
+  // Keep admin, login and order pages out of the sitemap
+  integrations: [sitemap({ filter: (page) => !/\/(admin|login|pedido)\//.test(page) })],
   image: {
     service: passthroughImageService(),
     remotePatterns: [
