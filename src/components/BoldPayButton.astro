@@ -18,7 +18,7 @@
  */
 
 import { getBoldConfig } from '../lib/bold';
-import { COLOMBIA_DEPARTMENTS, CUSTOMER_LIMITS } from '../lib/customer';
+import { COLOMBIA_DEPARTMENTS, CUSTOMER_LIMITS, DOCUMENT_TYPES } from '../lib/customer';
 import { getSupabaseAdmin } from '../lib/supabase-admin';
 
 interface Props {
@@ -54,6 +54,20 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
           <span class="field-label">Nombre completo de quien recibe</span>
           <input class="field-input" type="text" name="fullName" autocomplete="name" required minlength="3" maxlength={CUSTOMER_LIMITS.fullName} />
         </label>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="field-label">Tipo de documento</span>
+            <select class="field-input" name="documentType" required>
+              <option value="">Selecciona…</option>
+              {Object.entries(DOCUMENT_TYPES).map(([code, name]) => <option value={code}>{name}</option>)}
+            </select>
+          </label>
+          <label class="block">
+            <span class="field-label">Número de documento</span>
+            <input class="field-input" type="text" name="documentNumber" required pattern="[0-9A-Za-z .\-]{5,20}" maxlength="20" placeholder="1023456789" />
+          </label>
+        </div>
 
         <div class="grid sm:grid-cols-2 gap-4">
           <label class="block">
@@ -152,6 +166,7 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
 <script>
   import { loadBoldLibrary, startBoldCheckout } from '../utils/bold-client';
   import { getCart } from '../utils/cart';
+  import type { CustomerDetails } from '../lib/customer';
 
   const LABEL = 'Pagar con';
   const MESSAGES = {
@@ -241,6 +256,8 @@ const enabled = getBoldConfig() !== null && getSupabaseAdmin() !== null;
         const data = new FormData(form);
         const customer = {
           fullName: String(data.get('fullName') ?? ''),
+          documentType: String(data.get('documentType') ?? '') as CustomerDetails['documentType'],
+          documentNumber: String(data.get('documentNumber') ?? ''),
           email: String(data.get('email') ?? ''),
           phone: String(data.get('phone') ?? ''),
           address: String(data.get('address') ?? ''),

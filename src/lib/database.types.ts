@@ -74,6 +74,8 @@ export interface Database {
           last_event: string | null
           note: string | null
           customer_name: string | null
+          customer_document_type: string | null
+          customer_document_number: string | null
           customer_email: string | null
           customer_phone: string | null
           shipping_address: string | null
@@ -98,6 +100,8 @@ export interface Database {
           last_event?: string | null
           note?: string | null
           customer_name?: string | null
+          customer_document_type?: string | null
+          customer_document_number?: string | null
           customer_email?: string | null
           customer_phone?: string | null
           shipping_address?: string | null
@@ -122,6 +126,8 @@ export interface Database {
           last_event?: string | null
           note?: string | null
           customer_name?: string | null
+          customer_document_type?: string | null
+          customer_document_number?: string | null
           customer_email?: string | null
           customer_phone?: string | null
           shipping_address?: string | null
