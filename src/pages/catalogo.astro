@@ -160,5 +160,11 @@ const categories = [...new Set(productsToDisplay.map(p => p.category))];
 
     // Sort select
     sortSelect?.addEventListener('change', applyFilters);
+
+    // Preselect a category from the URL, e.g. /catalogo?categoria=courses
+    const initialCategory = new URLSearchParams(location.search).get('categoria');
+    if (initialCategory) {
+      document.querySelector<HTMLButtonElement>(`.filter-btn[data-category="${CSS.escape(initialCategory)}"]`)?.click();
+    }
   });
 </script>

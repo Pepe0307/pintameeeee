@@ -3,16 +3,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCarousel from '../components/ProductCarousel.astro';
 import { supabase } from '../lib/supabase';
 import { SITE_CONFIG } from '../utils/config';
+import { COURSE_CATEGORY } from '../utils/cart';
 
-const { data: featuredProducts, error } = supabase 
-  ? await supabase.from('products').select('*').eq('featured', true)
+const { data: homeProducts, error } = supabase 
+  ? await supabase.from('products').select('*').or(`featured.eq.true,category.eq.${COURSE_CATEGORY}`)
   : { data: null, error: new Error('Supabase client not initialized') };
 
 if (error) {
   console.error('Fetch error:', error.message);
 }
 
-const productsToDisplay = featuredProducts || [];
+// Courses get their own section, so they never repeat in best sellers
+const courses = (homeProducts || []).filter(p => p.category === COURSE_CATEGORY);
+const productsToDisplay = (homeProducts || []).filter(p => p.featured && p.category !== COURSE_CATEGORY);
 ---
 
 <BaseLayout 
@@ -34,8 +37,34 @@ const productsToDisplay = featuredProducts || [];
     </div>
   </section>
 
+  <!-- Courses -->
+  {courses.length > 0 && (
+    <section id="cursos" class="py-20 px-4 bg-gallery-pinkpink">
+      <div class="container mx-auto">
+        <div class="text-center mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+          <h2 class="font-display text-4xl font-bold text-gallery-charcoal mb-4">
+            ☆ Nuestros cursos ☆
+          </h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Aprende con nosotros · 10% de descuento llevando 2 cursos, 15% llevando 3
+          </p>
+        </div>
+
+        <div class="max-w-4xl mx-auto">
+          <ProductCarousel products={courses} interval={3000} columns={2} />
+        </div>
+
+        <div class="text-center mt-12">
+          <a href={`/catalogo?categoria=${COURSE_CATEGORY}`} class="btn-primary">
+            Ver todos los cursos →
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- Featured Products -->
-  <section class="py-20 px-4 bg-gallery-pinkpink">
+  <section class="py-20 px-4 bg-gallery-pinpin">
     <div class="container mx-auto">
       <div class="text-center mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
         <h2 class="font-display text-4xl font-bold text-gallery-charcoal mb-4">
@@ -63,7 +92,7 @@ const productsToDisplay = featuredProducts || [];
   </section>
 
   <!-- About Section -->
-  <section id="about" class="py-20 px-4 bg-gallery-pinpin">
+  <section id="about" class="py-20 px-4 bg-gallery-pinkpink">
     <div class="container mx-auto max-w-4xl text-center animate-fade-in-up">
       <h2 class="font-display text-4xl font-bold text-gallery-charcoal mb-6">
         𓇼 Sobre nosotros 𓇼
@@ -75,7 +104,7 @@ const productsToDisplay = featuredProducts || [];
   </section>
 
   <!-- Contact Section -->
-  <section id="contact" class="py-20 px-4 bg-gallery-pinkpink">
+  <section id="contact" class="py-20 px-4 bg-gallery-pinpin">
     <div class="container mx-auto max-w-2xl text-center animate-fade-in-up">
       <h2 class="font-display text-4xl font-bold text-gallery-charcoal mb-6">
         ⁠Hablemos ✿
