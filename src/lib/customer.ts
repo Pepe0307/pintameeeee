@@ -16,8 +16,22 @@ export const COLOMBIA_DEPARTMENTS = [
   'Valle del Cauca', 'Vaupés', 'Vichada',
 ] as const;
 
+/** Identity documents accepted in Colombia, by code */
+export const DOCUMENT_TYPES = {
+  CC: 'Cédula de ciudadanía',
+  CE: 'Cédula de extranjería',
+  TI: 'Tarjeta de identidad',
+  PA: 'Pasaporte',
+  PPT: 'Permiso por Protección Temporal',
+  NIT: 'NIT',
+} as const;
+
+export type DocumentType = keyof typeof DOCUMENT_TYPES;
+
 export interface CustomerDetails {
   fullName: string;
+  documentType: DocumentType;
+  documentNumber: string; // digits only, letters allowed for passports
   email: string;
   phone: string;       // digits only, e.g. "3001234567"
   address: string;
@@ -56,6 +70,14 @@ export function parseCustomerDetails(
   const fullName = clean(input.fullName, CUSTOMER_LIMITS.fullName);
   if (!fullName || fullName.length < 3) invalid.push('fullName');
 
+  const documentType = typeof input.documentType === 'string' ? input.documentType : '';
+  if (!Object.hasOwn(DOCUMENT_TYPES, documentType)) invalid.push('documentType');
+
+  // Accept "1.023.456-789"; store without separators. Only passports have letters
+  const rawDocument = typeof input.documentNumber === 'string' ? input.documentNumber.replace(/[\s.\-]/g, '').toUpperCase() : '';
+  const documentRe = documentType === 'PA' ? /^[A-Z0-9]{5,15}$/ : /^\d{5,15}$/;
+  if (!documentRe.test(rawDocument)) invalid.push('documentNumber');
+
   const email = clean(input.email, CUSTOMER_LIMITS.email)?.toLowerCase() ?? null;
   if (!email || !EMAIL_RE.test(email)) invalid.push('email');
 
@@ -83,6 +105,6 @@ export function parseCustomerDetails(
   if (invalid.length > 0) return { ok: false, fields: invalid };
   return {
     ok: true,
-    customer: { fullName: fullName!, email: email!, phone, address: address!, city: city!, department, notes },
+    customer: { fullName: fullName!, documentType: documentType as DocumentType, documentNumber: rawDocument, email: email!, phone, address: address!, city: city!, department, notes },
   };
 }

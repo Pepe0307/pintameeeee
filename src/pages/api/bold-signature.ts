@@ -154,6 +154,8 @@ export const POST: APIRoute = async ({ request }) => {
       price: p.price,
     })),
     customer_name: customer.fullName,
+    customer_document_type: customer.documentType,
+    customer_document_number: customer.documentNumber,
     customer_email: customer.email,
     customer_phone: customer.phone,
     shipping_address: customer.address,
