@@ -1,0 +1,126 @@
+---
+import ProductCard from './ProductCard.astro';
+import type { Database } from '../lib/database.types';
+
+interface Props {
+  products: Database['public']['Tables']['products']['Row'][];
+  /** Auto-advance interval in milliseconds (default: 5000) */
+  interval?: number;
+}
+
+const { products, interval = 5000 } = Astro.props;
+---
+
+<div class="product-carousel relative" data-interval={interval}>
+  <div class="product-carousel__track flex gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    {products.map(product => (
+      <div class="product-carousel__slide snap-start shrink-0 w-full md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]">
+        <ProductCard
+          slug={product.id.toString()}
+          title={product.title}
+          artist={product.artist}
+          price={product.price}
+          currency={product.currency}
+          image={product.image_url}
+          category={product.category}
+          available={product.available}
+        />
+      </div>
+    ))}
+  </div>
+
+  <!-- Arrows and dots are hidden by the script when every product already fits -->
+  <button
+    class="product-carousel__prev hidden absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white shadow-md text-gallery-charcoal text-2xl leading-none hover:bg-gallery-newpink hover:text-white transition-colors cursor-pointer"
+    aria-label="Producto anterior"
+  >‹</button>
+  <button
+    class="product-carousel__next hidden absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white shadow-md text-gallery-charcoal text-2xl leading-none hover:bg-gallery-newpink hover:text-white transition-colors cursor-pointer"
+    aria-label="Siguiente producto"
+  >›</button>
+
+  <div class="product-carousel__dots flex justify-center gap-2.5 mt-8"></div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const carousels = document.querySelectorAll<HTMLElement>(".product-carousel");
+
+    carousels.forEach((carousel) => {
+      const track = carousel.querySelector<HTMLElement>(".product-carousel__track")!;
+      const slides = carousel.querySelectorAll<HTMLElement>(".product-carousel__slide");
+      const prev = carousel.querySelector<HTMLButtonElement>(".product-carousel__prev")!;
+      const next = carousel.querySelector<HTMLButtonElement>(".product-carousel__next")!;
+      const dotsBox = carousel.querySelector<HTMLElement>(".product-carousel__dots")!;
+      const intervalMs = Number(carousel.dataset.interval) || 5000;
+
+      let positions = 1;
+      let timer: ReturnType<typeof setInterval> | undefined;
+
+      // Index of the first visible card, derived from the scroll position
+      function current() {
+        const step = slides[1] ? slides[1].offsetLeft - slides[0].offsetLeft : 1;
+        return Math.min(positions - 1, Math.round(track.scrollLeft / step));
+      }
+
+      function goTo(index: number) {
+        track.scrollTo({ left: slides[index].offsetLeft - slides[0].offsetLeft });
+      }
+
+      function updateDots() {
+        const active = current();
+        dotsBox.querySelectorAll("button").forEach((dot, i) => {
+          dot.classList.toggle("bg-gallery-newpink", i === active);
+          dot.classList.toggle("scale-110", i === active);
+          dot.classList.toggle("bg-gallery-newpink/30", i !== active);
+        });
+      }
+
+      function stopAutoPlay() {
+        clearInterval(timer);
+        timer = undefined;
+      }
+
+      function startAutoPlay() {
+        stopAutoPlay();
+        if (positions > 1) timer = setInterval(() => goTo((current() + 1) % positions), intervalMs);
+      }
+
+      // Recompute how many scroll positions exist for the current screen width
+      function layout() {
+        const visible = Math.max(1, Math.round(track.clientWidth / slides[0].offsetWidth));
+        positions = Math.max(1, slides.length - visible + 1);
+        const scrollable = positions > 1;
+        prev.classList.toggle("hidden", !scrollable);
+        next.classList.toggle("hidden", !scrollable);
+
+        dotsBox.replaceChildren();
+        if (scrollable) {
+          for (let i = 0; i < positions; i++) {
+            const dot = document.createElement("button");
+            dot.className = "w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer";
+            dot.setAttribute("aria-label", `Ir al producto ${i + 1}`);
+            dot.addEventListener("click", () => { goTo(i); startAutoPlay(); });
+            dotsBox.append(dot);
+          }
+          updateDots();
+        }
+        startAutoPlay();
+      }
+
+      if (!slides.length) return;
+
+      prev.addEventListener("click", () => { goTo((current() - 1 + positions) % positions); startAutoPlay(); });
+      next.addEventListener("click", () => { goTo((current() + 1) % positions); startAutoPlay(); });
+      track.addEventListener("scroll", updateDots, { passive: true });
+
+      // Pause on hover/touch for better UX
+      carousel.addEventListener("mouseenter", stopAutoPlay);
+      carousel.addEventListener("mouseleave", startAutoPlay);
+      track.addEventListener("touchstart", stopAutoPlay, { passive: true });
+
+      window.addEventListener("resize", layout);
+      layout();
+    });
+  });
+</script>
